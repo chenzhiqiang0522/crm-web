@@ -10,32 +10,34 @@ import Vuex from 'vuex'
 //import NProgress from 'nprogress'
 //import 'nprogress/nprogress.css'
 import routes from './routes'
-import Mock from './mock'
-Mock.bootstrap();
+// import Mock from './mock'
+// Mock.bootstrap();
 import 'font-awesome/css/font-awesome.min.css'
+import Axios from 'axios'
+Axios.defaults.baseURL = '/api'
 
 Vue.use(ElementUI)
 Vue.use(VueRouter)
 Vue.use(Vuex)
-
+Vue.prototype.$http = Axios
 //NProgress.configure({ showSpinner: false });
 
 const router = new VueRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
-  //NProgress.start();
-  if (to.path == '/login') {
-    sessionStorage.removeItem('user');
-  }
-  let user = JSON.parse(sessionStorage.getItem('user'));
-  if (!user && to.path != '/login') {
-    next({ path: '/login' })
-  } else {
-    next()
-  }
-})
+// router.beforeEach((to, from, next) => {
+//   //NProgress.start();
+//   if (to.path == '/login') {
+//     sessionStorage.removeItem('user');
+//   }
+//   let user = JSON.parse(sessionStorage.getItem('user'));
+//   if (!user && to.path != '/login') {
+//     next({ path: '/login' })
+//   } else {
+//     next()
+//   }
+// })
 
 //router.afterEach(transition => {
 //NProgress.done();
