@@ -50,7 +50,7 @@
         <!--工具条-->
         <el-col :span = "24" class = "toolbar">
             <el-button type = "danger" @click = "batchRemove" :disabled = "this.sels.length===0">批量删除</el-button>
-            <el-pagination layout = "prev, pager, next" @current-change = "handleCurrentChange" :page-size = "20"
+            <el-pagination layout = "prev, pager, next" @current-change = "handleCurrentChange" :page-size = "queryObject.pageSize"
                            :total = "total" style = "float:right;">
             </el-pagination>
         </el-col>
@@ -129,7 +129,7 @@ export default {
             page: 1,
             listLoading: false,
             sels: [],//列表选中列
-
+            selsId:[],
             editFormVisible: false,//编辑界面是否显示
             editLoading: false,
             editFormRules: {
@@ -177,7 +177,9 @@ export default {
         },
         handleCurrentChange(val) {
             this.page = val;
-            this.getUsers();
+            // console.log("val",val)
+            this.queryObject.currentPage = val
+            this.getDepartments()
         },
         search() {
             this.queryObject.keyword = this.filters.keyword
@@ -188,8 +190,10 @@ export default {
             console.log(this.queryObject)
             this.$http.post("/Departments/pageList", this.queryObject)
                 .then(result => {
-                    console.log(result.data.resultObj.rows)
+                    // console.log("resultObj.rows",result.data.resultObj.rows)
+                    // console.log("resultObj",result.data.resultObj)
                     this.departments = result.data.resultObj.rows
+                    this.total = result.data.resultObj.total
                 })
                 .catch(result => {
                     this.$message({
@@ -211,7 +215,9 @@ export default {
                             message: result.data.msg,
                             type: 'success'
                         })
-                        console.log(result.data)
+                        this.queryObject.currentPage = 1
+                        this.getDepartments()
+                        // console.log(result.data)
                     })
             }).catch(() => {
 
@@ -286,24 +292,21 @@ export default {
         },
         //批量删除
         batchRemove: function () {
-            var ids = this.sels.map(item => item.id).toString();
+            var ids = this.sels.map(item => item.id)
             this.$confirm('确认删除选中记录吗？', '提示', {
                 type: 'warning'
             }).then(() => {
                 this.listLoading = true;
                 //NProgress.start();
                 let para = {ids: ids};
-                batchRemoveUser(para).then((res) => {
-                    this.listLoading = false;
-                    //NProgress.done();
+                console.log("para",para.ids)
+                this.$http.patch("/Departments/patchDelete",para.ids).then(result =>{
                     this.$message({
-                        message: '删除成功',
-                        type: 'success'
-                    });
-                    this.getUsers();
-                });
-            }).catch(() => {
-
+                        type:"success",
+                        message:result.data.msg
+                    })
+                    this.getDepartments()
+                })
             });
         }
     },
