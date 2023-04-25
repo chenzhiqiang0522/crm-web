@@ -1,4 +1,4 @@
-<template>
+<template >
     <section>
         <!--工具条-->
         <el-col :span = "24" class = "toolbar" style = "padding-bottom: 0px;">
@@ -22,7 +22,7 @@
             </el-table-column>
             <el-table-column type = "index" width = "60">
             </el-table-column>
-            <el-table-column prop = "name" label = "姓名" width = auto sortable>
+            <el-table-column prop = "name" label = "部门名称" width = auto sortable>
             </el-table-column>
             <el-table-column prop = "intro" label = "介绍" width = auto" sortable>
             </el-table-column>
@@ -36,7 +36,25 @@
             </el-table-column>
             <el-table-column prop = "path" label = "管理路径" width = auto sortable>
             </el-table-column>
-            <el-table-column prop = "state" label = "状态" width = auto sortable>
+            <el-table-column label = "状态" width = auto sortable>
+                <template scope="scope">
+                    <el-tag
+                        v-if = "scope.row.state==1"
+                        :key = "items[0].label"
+                        :type = "items[0].type"
+                        size="medium"
+                        effect = "plain">
+                        {{ items[0].label }}
+                    </el-tag>
+                    <el-tag
+                        v-else
+                        :key = "items[1].label"
+                        :type = "items[1].type"
+                        size="medium"
+                        effect = "plain">
+                        {{ items[1].label }}
+                    </el-tag>
+                </template>
             </el-table-column>
             <el-table-column label = "操作" width = auto>
                 <template scope = "scope">
@@ -50,63 +68,35 @@
         <!--工具条-->
         <el-col :span = "24" class = "toolbar">
             <el-button type = "danger" @click = "batchRemove" :disabled = "this.sels.length===0">批量删除</el-button>
-            <el-pagination layout = "prev, pager, next" @current-change = "handleCurrentChange" :page-size = "queryObject.pageSize"
+            <el-pagination layout = "prev, pager, next" @current-change = "handleCurrentChange"
+                           :page-size = "queryObject.pageSize"
                            :total = "total" style = "float:right;">
             </el-pagination>
         </el-col>
 
-        <!--编辑界面-->
-        <el-dialog title = "编辑" v-model = "editFormVisible" :close-on-click-modal = "false">
-            <el-form :model = "editForm" label-width = "80px" :rules = "editFormRules" ref = "editForm">
-                <el-form-item label = "姓名" prop = "name">
-                    <el-input v-model = "editForm.name" auto-complete = "off"></el-input>
-                </el-form-item>
-                <el-form-item label = "性别">
-                    <el-radio-group v-model = "editForm.sex">
-                        <el-radio class = "radio" :label = "1">男</el-radio>
-                        <el-radio class = "radio" :label = "0">女</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-                <el-form-item label = "年龄">
-                    <el-input-number v-model = "editForm.age" :min = "0" :max = "200"></el-input-number>
-                </el-form-item>
-                <el-form-item label = "生日">
-                    <el-date-picker type = "date" placeholder = "选择日期" v-model = "editForm.birth"></el-date-picker>
-                </el-form-item>
-                <el-form-item label = "地址">
-                    <el-input type = "textarea" v-model = "editForm.addr"></el-input>
-                </el-form-item>
-            </el-form>
-            <div slot = "footer" class = "dialog-footer">
-                <el-button @click.native = "editFormVisible = false">取消</el-button>
-                <el-button type = "primary" @click.native = "editSubmit" :loading = "editLoading">提交</el-button>
-            </div>
-        </el-dialog>
-
         <!--新增界面-->
-        <el-dialog title = "新增" v-model = "addFormVisible" :close-on-click-modal = "false">
-            <el-form :model = "addForm" label-width = "80px" :rules = "addFormRules" ref = "addForm">
-                <el-form-item label = "姓名" prop = "name">
-                    <el-input v-model = "addForm.name" auto-complete = "off"></el-input>
+        <el-dialog title = "新增" v-bind:visible.sync="saveFormVisible" :close-on-click-modal = "false">
+            <el-form :model = "saveForm" label-width = "80px" :rules = "saveFormRules" ref = "saveForm">
+                <el-form-item label = "部门名称" prop = "name">
+                    <el-input v-model = "saveForm.name" auto-complete = "off"></el-input>
                 </el-form-item>
-                <el-form-item label = "性别">
-                    <el-radio-group v-model = "addForm.sex">
-                        <el-radio class = "radio" :label = "1">男</el-radio>
-                        <el-radio class = "radio" :label = "0">女</el-radio>
-                    </el-radio-group>
+                <el-form-item label = "部门介绍">
+                    <el-input type="textarea" rows="2" v-model = "saveForm.intro" ></el-input>
                 </el-form-item>
-                <el-form-item label = "年龄">
-                    <el-input-number v-model = "addForm.age" :min = "0" :max = "200"></el-input-number>
+                <el-form-item label = "状态">
+                    <el-radio v-model="saveForm.state" :label="1" >正常</el-radio>
+                    <el-radio v-model="saveForm.state" :label="0" >弃用</el-radio>
                 </el-form-item>
-                <el-form-item label = "生日">
-                    <el-date-picker type = "date" placeholder = "选择日期" v-model = "addForm.birth"></el-date-picker>
+                <el-form-item label = "部门经理">
+                    <el-input v-model = "saveForm.manageId" ></el-input>
                 </el-form-item>
-                <el-form-item label = "地址">
-                    <el-input type = "textarea" v-model = "addForm.addr"></el-input>
+                <el-form-item label = "父部门">
+                    <el-input v-model = "saveForm.parentId" ></el-input>
                 </el-form-item>
+
             </el-form>
             <div slot = "footer" class = "dialog-footer">
-                <el-button @click.native = "addFormVisible = false">取消</el-button>
+                <el-button @click.native = "saveFormVisible = false">取消</el-button>
                 <el-button type = "primary" @click.native = "addSubmit" :loading = "addLoading">提交</el-button>
             </div>
         </el-dialog>
@@ -121,6 +111,10 @@
 export default {
     data() {
         return {
+            items: [
+                { type: 'success', label: '正常' },
+                { type: 'danger', label: '弃用' },
+            ],
             filters: {
                 keyword: ''
             },
@@ -129,38 +123,38 @@ export default {
             page: 1,
             listLoading: false,
             sels: [],//列表选中列
-            selsId:[],
-            editFormVisible: false,//编辑界面是否显示
-            editLoading: false,
-            editFormRules: {
-                name: [
-                    {required: true, message: '请输入姓名', trigger: 'blur'}
-                ]
-            },
+            selsId: [],
+            // editFormVisible: false,//编辑界面是否显示
+            // editLoading: false,
+            // editFormRules: {
+            //     name: [
+            //         {required: true, message: '请输入姓名', trigger: 'blur'}
+            //     ]
+            // },
             //编辑界面数据
-            editForm: {
-                id: 0,
-                name: '',
-                sex: -1,
-                age: 0,
-                birth: '',
-                addr: ''
-            },
+            // editForm: {
+            //     id: 0,
+            //     name: '',
+            //     sex: -1,
+            //     age: 0,
+            //     birth: '',
+            //     addr: ''
+            // },
 
-            addFormVisible: false,//新增界面是否显示
+            saveFormVisible: false,//新增界面是否显示
             addLoading: false,
-            addFormRules: {
+            saveFormRules: {
                 name: [
                     {required: true, message: '请输入姓名', trigger: 'blur'}
                 ]
             },
             //新增界面数据
-            addForm: {
+            saveForm: {
                 name: '',
-                sex: -1,
-                age: 0,
-                birth: '',
-                addr: ''
+                intro:'',
+                manageId:'',
+                parentId: '',
+                state: ''
             },
             queryObject: {
                 keyword: '',
@@ -187,13 +181,14 @@ export default {
         },
         //获取用户列表
         getDepartments() {
-            console.log(this.queryObject)
+            // console.log(this.queryObject)
             this.$http.post("/Departments/pageList", this.queryObject)
                 .then(result => {
                     // console.log("resultObj.rows",result.data.resultObj.rows)
                     // console.log("resultObj",result.data.resultObj)
                     this.departments = result.data.resultObj.rows
                     this.total = result.data.resultObj.total
+                    console.log(this.departments)
                 })
                 .catch(result => {
                     this.$message({
@@ -208,7 +203,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.listLoading = true;
-                this.$http.delete("/Departments/"+row.id)
+                this.$http.delete("/Departments/" + row.id)
                     .then(result => {
                         this.listLoading = false;
                         this.$message({
@@ -225,18 +220,22 @@ export default {
         },
         //显示编辑界面
         handleEdit: function (index, row) {
-            this.editFormVisible = true;
-            this.editForm = Object.assign({}, row);
+            this.saveForm = Object.assign({}, row);
+            this.saveForm.state = row.state
+            console.log(row)
+            console.log(this.saveForm)
+            console.log(typeof this.saveForm.state)
+            this.saveFormVisible = true;
         },
         //显示新增界面
         handleAdd: function () {
-            this.addFormVisible = true;
-            this.addForm = {
+            this.saveFormVisible = true;
+            this.saveForm = {
                 name: '',
-                sex: -1,
-                age: 0,
-                birth: '',
-                addr: ''
+                intro:'',
+                manageId:'',
+                parentId: '',
+                state: ''
             };
         },
         //编辑
@@ -265,12 +264,12 @@ export default {
         },
         //新增
         addSubmit: function () {
-            this.$refs.addForm.validate((valid) => {
+            this.$refs.saveForm.validate((valid) => {
                 if (valid) {
                     this.$confirm('确认提交吗？', '提示', {}).then(() => {
                         this.addLoading = true;
                         //NProgress.start();
-                        let para = Object.assign({}, this.addForm);
+                        let para = Object.assign({}, this.saveForm);
                         para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
                         addUser(para).then((res) => {
                             this.addLoading = false;
@@ -279,8 +278,8 @@ export default {
                                 message: '提交成功',
                                 type: 'success'
                             });
-                            this.$refs['addForm'].resetFields();
-                            this.addFormVisible = false;
+                            this.$refs['saveForm'].resetFields();
+                            this.saveFormVisible = false;
                             this.getUsers();
                         });
                     });
@@ -299,14 +298,20 @@ export default {
                 this.listLoading = true;
                 //NProgress.start();
                 let para = {ids: ids};
-                console.log("para",para.ids)
-                this.$http.patch("/Departments/patchDelete",para.ids).then(result =>{
+                console.log("para", para.ids)
+                this.$http.patch("/Departments/patchDelete", para.ids).then(result => {
                     this.$message({
-                        type:"success",
-                        message:result.data.msg
+                        type: "success",
+                        message: result.data.msg
                     })
                     this.getDepartments()
                 })
+                    .catch(() => {
+                        this.$message({
+                            type: "error",
+                            message: "网络开小差啦，请稍后再试!"
+                        })
+                    })
             });
         }
     },
