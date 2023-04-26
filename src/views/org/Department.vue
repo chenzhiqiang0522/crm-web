@@ -122,18 +122,6 @@ export default {
             options: [{
                 value: '选项1',
                 label: '黄金糕'
-            }, {
-                value: '选项2',
-                label: '双皮奶'
-            }, {
-                value: '选项3',
-                label: '蚵仔煎'
-            }, {
-                value: '选项4',
-                label: '龙须面'
-            }, {
-                value: '选项5',
-                label: '北京烤鸭'
             }],
             value: '',
             items: [
@@ -161,7 +149,6 @@ export default {
             saveForm: {
                 name: '',
                 intro: '',
-                manageId: '',
                 manager: {
                     id: null,
                     username: null
@@ -170,7 +157,6 @@ export default {
                     id: null,
                     name: null
                 },
-                parentId: '',
                 state: ''
             },
             queryObject: {
@@ -195,6 +181,26 @@ export default {
         search() {
             this.queryObject.keyword = this.filters.keyword
             this.getDepartments()
+        },
+        //获取全部员工
+        getEmployees(){
+            this.$http.get("/Employees")
+                .then(reslut=>{
+                    let tempArray=[]
+                    // console.log(reslut.data)
+                    this.options = reslut.data
+                    reslut.data.resultObj.map(item=>{
+                        // console.log(item)
+                        let tempObj={
+                            value:item.id,
+                            label:item.username
+                        }
+                        tempArray.push(tempObj)
+                    })
+                    console.log("tempArray",tempArray)
+                    this.options = tempArray
+                    // console.log("options",this.options)
+                })
         },
         //获取用户列表
         getDepartments() {
@@ -239,7 +245,7 @@ export default {
         handleEdit: function (index, row) {
             this.saveForm = Object.assign({}, row);
             this.saveForm.state = row.state
-            console.log("saveForm1", this.saveForm)
+            // console.log("saveForm1", this.saveForm)
             if (this.saveForm.manager == null){
                 this.saveForm.manager={
                     id:null,
@@ -252,17 +258,26 @@ export default {
                     name: null
                 }
             // console.log("row",row)
-            console.log("saveForm2", this.saveForm)
+            // console.log("saveForm2", this.saveForm)
+            this.value = this.saveForm.manager.id
+            // console.log("manageId",this.saveForm.manageId)
             this.saveFormVisible = true;
         },
         //显示新增界面
         handleAdd: function () {
             this.saveFormVisible = true;
+            this.getEmployees();
             this.saveForm = {
                 name: '',
                 intro: '',
-                manageId: '',
-                parentId: '',
+                manager: {
+                    id: null,
+                    username: null
+                },
+                parent: {
+                    id: null,
+                    name: null
+                },
                 state: ''
             };
         },
