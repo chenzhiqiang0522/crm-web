@@ -1,4 +1,4 @@
-<template >
+<template>
     <section>
         <!--工具条-->
         <el-col :span = "24" class = "toolbar" style = "padding-bottom: 0px;">
@@ -37,21 +37,21 @@
             <el-table-column prop = "path" label = "管理路径" width = auto sortable>
             </el-table-column>
             <el-table-column label = "状态" width = auto sortable>
-                <template scope="scope">
+                <template scope = "scope">
                     <el-tag
-                        v-if = "scope.row.state==1"
-                        :key = "items[0].label"
-                        :type = "items[0].type"
-                        size="medium"
-                        effect = "plain">
+                            v-if = "scope.row.state==1"
+                            :key = "items[0].label"
+                            :type = "items[0].type"
+                            size = "medium"
+                            effect = "plain">
                         {{ items[0].label }}
                     </el-tag>
                     <el-tag
-                        v-else
-                        :key = "items[1].label"
-                        :type = "items[1].type"
-                        size="medium"
-                        effect = "plain">
+                            v-else
+                            :key = "items[1].label"
+                            :type = "items[1].type"
+                            size = "medium"
+                            effect = "plain">
                         {{ items[1].label }}
                     </el-tag>
                 </template>
@@ -75,23 +75,31 @@
         </el-col>
 
         <!--新增界面-->
-        <el-dialog title = "新增" v-bind:visible.sync="saveFormVisible" :close-on-click-modal = "false">
+        <el-dialog title = "新增" v-bind:visible.sync = "saveFormVisible" :close-on-click-modal = "false">
             <el-form :model = "saveForm" label-width = "80px" :rules = "saveFormRules" ref = "saveForm">
                 <el-form-item label = "部门名称" prop = "name">
                     <el-input v-model = "saveForm.name" auto-complete = "off"></el-input>
                 </el-form-item>
                 <el-form-item label = "部门介绍">
-                    <el-input type="textarea" rows="2" v-model = "saveForm.intro" ></el-input>
+                    <el-input type = "textarea" rows = "2" v-model = "saveForm.intro"></el-input>
                 </el-form-item>
                 <el-form-item label = "状态">
-                    <el-radio v-model="saveForm.state" :label="1" >正常</el-radio>
-                    <el-radio v-model="saveForm.state" :label="0" >弃用</el-radio>
+                    <el-radio v-model = "saveForm.state" :label = "1">正常</el-radio>
+                    <el-radio v-model = "saveForm.state" :label = "0">弃用</el-radio>
                 </el-form-item>
                 <el-form-item label = "部门经理">
-                    <el-input v-model = "saveForm.manager.username" ></el-input>
+                    <!--                    <el-input v-model = "saveForm.manager.username" ></el-input>-->
+                    <el-select v-model = "value" filterable placeholder = "请选择">
+                        <el-option
+                                v-for = "item in options"
+                                :key = "item.value"
+                                :label = "item.label"
+                                :value = "item.value">
+                        </el-option>
+                    </el-select>
                 </el-form-item>
                 <el-form-item label = "父部门">
-                    <el-input v-model = "saveForm.parent.name" ></el-input>
+                    <el-input v-model = "saveForm.parent.name"></el-input>
                 </el-form-item>
 
             </el-form>
@@ -111,9 +119,26 @@
 export default {
     data() {
         return {
+            options: [{
+                value: '选项1',
+                label: '黄金糕'
+            }, {
+                value: '选项2',
+                label: '双皮奶'
+            }, {
+                value: '选项3',
+                label: '蚵仔煎'
+            }, {
+                value: '选项4',
+                label: '龙须面'
+            }, {
+                value: '选项5',
+                label: '北京烤鸭'
+            }],
+            value: '',
             items: [
-                { type: 'success', label: '正常' },
-                { type: 'danger', label: '弃用' },
+                {type: 'success', label: '正常'},
+                {type: 'danger', label: '弃用'},
             ],
             filters: {
                 keyword: ''
@@ -135,8 +160,16 @@ export default {
             //新增界面数据
             saveForm: {
                 name: '',
-                intro:'',
-                manageId:'',
+                intro: '',
+                manageId: '',
+                manager: {
+                    id: null,
+                    username: null
+                },
+                parent: {
+                    id: null,
+                    name: null
+                },
                 parentId: '',
                 state: ''
             },
@@ -206,13 +239,20 @@ export default {
         handleEdit: function (index, row) {
             this.saveForm = Object.assign({}, row);
             this.saveForm.state = row.state
-            console.log("row",row)
-            console.log("saveForm",this.saveForm)
-            console.log(typeof this.saveForm.state)
-            if (this.saveForm.manager == null)
-                this.saveForm.manager = ""
+            console.log("saveForm1", this.saveForm)
+            if (this.saveForm.manager == null){
+                this.saveForm.manager={
+                    id:null,
+                    username:null
+                }
+            }
             if (this.saveForm.parent == null)
-                this.saveForm.parent = ""
+                this.saveForm.parent = {
+                    id: null,
+                    name: null
+                }
+            // console.log("row",row)
+            console.log("saveForm2", this.saveForm)
             this.saveFormVisible = true;
         },
         //显示新增界面
@@ -220,8 +260,8 @@ export default {
             this.saveFormVisible = true;
             this.saveForm = {
                 name: '',
-                intro:'',
-                manageId:'',
+                intro: '',
+                manageId: '',
                 parentId: '',
                 state: ''
             };
