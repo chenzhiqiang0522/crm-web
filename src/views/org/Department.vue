@@ -89,7 +89,7 @@
                 </el-form-item>
                 <el-form-item label = "部门经理">
                     <!--                    <el-input v-model = "saveForm.manager.username" ></el-input>-->
-                    <el-select v-model = "value" filterable placeholder = "请选择">
+                    <el-select v-model = "optionsValue" filterable placeholder = "请选择">
                         <el-option
                                 v-for = "item in options"
                                 :key = "item.value"
@@ -99,13 +99,20 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label = "父部门">
-                    <el-input v-model = "saveForm.parent.name"></el-input>
+<!--                    <el-input v-model = "saveForm.parent.name"></el-input>-->
+                    <el-cascader
+                        v-model="saveForm.parent"
+                        :options="cascaderOptions"
+                        :props="{ expandTrigger: 'hover',
+                         label:'name',
+                         value:'id',
+                         children:'childDepartments'}"></el-cascader>
                 </el-form-item>
 
             </el-form>
             <div slot = "footer" class = "dialog-footer">
                 <el-button @click.native = "saveFormVisible = false">取消</el-button>
-                <el-button type = "primary" @click.native = "addSubmit" :loading = "addLoading">提交</el-button>
+                <el-button type = "primary" @click = "addSubmit" :loading = "addLoading">提交</el-button>
             </div>
         </el-dialog>
     </section>
@@ -119,11 +126,8 @@
 export default {
     data() {
         return {
-            options: [{
-                value: '选项1',
-                label: '黄金糕'
-            }],
-            value: '',
+            options: [],
+            optionsValue: '',
             items: [
                 {type: 'success', label: '正常'},
                 {type: 'danger', label: '弃用'},
@@ -157,8 +161,10 @@ export default {
                     id: null,
                     name: null
                 },
-                state: ''
+                state: '',
+
             },
+            cascaderOptions:[],
             queryObject: {
                 keyword: '',
                 currentPage: 1,
@@ -186,7 +192,10 @@ export default {
         getEmployees(){
             this.$http.get("/Employees")
                 .then(reslut=>{
-                    let tempArray=[]
+                    let tempArray=[{
+                        value:0,
+                        label:"请选择部门经理"
+                    }]
                     // console.log(reslut.data)
                     this.options = reslut.data
                     reslut.data.resultObj.map(item=>{
@@ -211,7 +220,21 @@ export default {
                     // console.log("resultObj",result.data.resultObj)
                     this.departments = result.data.resultObj.rows
                     this.total = result.data.resultObj.total
-                    console.log(this.departments)
+                    // console.log(this.departments)
+                })
+                .catch(result => {
+                    this.$message({
+                        message: '网络出现错误!请稍后再试',
+                        type: 'error'
+                    })
+                })
+        },
+        getDepartmentTree() {
+            // console.log(this.queryObject)
+            this.$http.get("/Departments/departmentTree")
+                .then(result => {
+                    console.log("resultObj",result.data.resultObj)
+                    this.cascaderOptions = result.data.resultObj
                 })
                 .catch(result => {
                     this.$message({
@@ -243,6 +266,8 @@ export default {
         },
         //显示编辑界面
         handleEdit: function (index, row) {
+            this.getEmployees();
+            this.getDepartmentTree()
             this.saveForm = Object.assign({}, row);
             this.saveForm.state = row.state
             // console.log("saveForm1", this.saveForm)
@@ -257,28 +282,28 @@ export default {
                     id: null,
                     name: null
                 }
-            // console.log("row",row)
-            // console.log("saveForm2", this.saveForm)
-            this.value = this.saveForm.manager.id
-            // console.log("manageId",this.saveForm.manageId)
+            this.optionsValue = this.saveForm.manager.id
+            console.log("optionsValue",this.optionsValue)
             this.saveFormVisible = true;
         },
         //显示新增界面
         handleAdd: function () {
             this.saveFormVisible = true;
             this.getEmployees();
+            this.getDepartmentTree()
+            this.optionsValue=0
             this.saveForm = {
                 name: '',
                 intro: '',
                 manager: {
-                    id: null,
+                    id: this.optionsValue,
                     username: null
                 },
                 parent: {
                     id: null,
                     name: null
                 },
-                state: ''
+                state: null
             };
         },
         //编辑
@@ -307,24 +332,46 @@ export default {
         },
         //新增
         addSubmit: function () {
+            console.log(this.saveForm)
             this.$refs.saveForm.validate((valid) => {
                 if (valid) {
                     this.$confirm('确认提交吗？', '提示', {}).then(() => {
                         this.addLoading = true;
-                        //NProgress.start();
-                        let para = Object.assign({}, this.saveForm);
-                        para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-                        addUser(para).then((res) => {
-                            this.addLoading = false;
-                            //NProgress.done();
-                            this.$message({
-                                message: '提交成功',
-                                type: 'success'
-                            });
-                            this.$refs['saveForm'].resetFields();
-                            this.saveFormVisible = false;
-                            this.getUsers();
-                        });
+                        // let array = this.saveForm.parent;
+                        let array = this.saveForm.parent;
+                        if (array && array.length>0){
+                            this.saveForm.parent ={
+                                id:array[array.length-1]
+                            }
+                        }else{
+                            this.saveForm.parent={id:null}
+                        }
+                        this.$http.post("/Departments/add", this.saveForm)
+                            .then(result => {
+                                result=result.data
+                                this.addLoading = false
+                                console.log("result",result)
+                                if (result.success){
+                                    this.$message({
+                                        message: '操作成功!',
+                                        type: 'success'
+                                    });
+                                    this.saveFormVisible = false;
+                                    this.getDepartments();
+                                }else{
+                                    this.$message({
+                                        message: result.msg,
+                                        type: 'error'
+                                    });
+                                }
+
+                            })
+                            .catch(result => {
+                                this.$message({
+                                    message: '网络错误!',
+                                    type: 'error'
+                                });
+                            })
                     });
                 }
             });
@@ -356,10 +403,11 @@ export default {
                         })
                     })
             });
-        }
+        },
     },
     mounted() {
         this.getDepartments();
+
     }
 }
 
