@@ -88,10 +88,10 @@
                     <el-radio v-model="saveForm.state" :label="0" >弃用</el-radio>
                 </el-form-item>
                 <el-form-item label = "部门经理">
-                    <el-input v-model = "saveForm.manageId" ></el-input>
+                    <el-input v-model = "saveForm.manager.username" ></el-input>
                 </el-form-item>
                 <el-form-item label = "父部门">
-                    <el-input v-model = "saveForm.parentId" ></el-input>
+                    <el-input v-model = "saveForm.parent.name" ></el-input>
                 </el-form-item>
 
             </el-form>
@@ -124,22 +124,6 @@ export default {
             listLoading: false,
             sels: [],//列表选中列
             selsId: [],
-            // editFormVisible: false,//编辑界面是否显示
-            // editLoading: false,
-            // editFormRules: {
-            //     name: [
-            //         {required: true, message: '请输入姓名', trigger: 'blur'}
-            //     ]
-            // },
-            //编辑界面数据
-            // editForm: {
-            //     id: 0,
-            //     name: '',
-            //     sex: -1,
-            //     age: 0,
-            //     birth: '',
-            //     addr: ''
-            // },
 
             saveFormVisible: false,//新增界面是否显示
             addLoading: false,
@@ -222,9 +206,13 @@ export default {
         handleEdit: function (index, row) {
             this.saveForm = Object.assign({}, row);
             this.saveForm.state = row.state
-            console.log(row)
-            console.log(this.saveForm)
+            console.log("row",row)
+            console.log("saveForm",this.saveForm)
             console.log(typeof this.saveForm.state)
+            if (this.saveForm.manager == null)
+                this.saveForm.manager = ""
+            if (this.saveForm.parent == null)
+                this.saveForm.parent = ""
             this.saveFormVisible = true;
         },
         //显示新增界面
