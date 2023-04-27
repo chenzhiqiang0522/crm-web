@@ -89,7 +89,7 @@
                 </el-form-item>
                 <el-form-item label = "部门经理">
                     <!--                    <el-input v-model = "saveForm.manager.username" ></el-input>-->
-                    <el-select v-model = "optionsValue" filterable placeholder = "请选择">
+                    <el-select v-model = "saveForm.manager.id" filterable placeholder = "请选择">
                         <el-option
                                 v-for = "item in options"
                                 :key = "item.value"
@@ -101,12 +101,13 @@
                 <el-form-item label = "父部门">
 <!--                    <el-input v-model = "saveForm.parent.name"></el-input>-->
                     <el-cascader
-                        v-model="saveForm.parent"
+                        v-model="saveForm.parent.id"
                         :options="cascaderOptions"
                         :props="{ expandTrigger: 'hover',
                          label:'name',
                          value:'id',
-                         children:'childDepartments'}"></el-cascader>
+                         children:'childDepartments',
+                         checkStrictly:true}"></el-cascader>
                 </el-form-item>
 
             </el-form>
@@ -193,7 +194,7 @@ export default {
             this.$http.get("/Employees")
                 .then(reslut=>{
                     let tempArray=[{
-                        value:0,
+                        value:null,
                         label:"请选择部门经理"
                     }]
                     // console.log(reslut.data)
@@ -235,6 +236,7 @@ export default {
                 .then(result => {
                     console.log("resultObj",result.data.resultObj)
                     this.cascaderOptions = result.data.resultObj
+                    console.log("cascaderOptions",this.cascaderOptions)
                 })
                 .catch(result => {
                     this.$message({
@@ -268,9 +270,9 @@ export default {
         handleEdit: function (index, row) {
             this.getEmployees();
             this.getDepartmentTree()
+            console.log("row",row)
             this.saveForm = Object.assign({}, row);
-            this.saveForm.state = row.state
-            // console.log("saveForm1", this.saveForm)
+            console.log("未修改saveForm",this.saveForm)
             if (this.saveForm.manager == null){
                 this.saveForm.manager={
                     id:null,
@@ -311,33 +313,7 @@ export default {
             this.$refs.editForm.validate((valid) => {
                 if (valid) {
                     this.$confirm('确认提交吗？', '提示', {}).then(() => {
-                        this.editLoading = true;
-                        //NProgress.start();
-                        let para = Object.assign({}, this.editForm);
-                        para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-                        editUser(para).then((res) => {
-                            this.editLoading = false;
-                            //NProgress.done();
-                            this.$message({
-                                message: '提交成功',
-                                type: 'success'
-                            });
-                            this.$refs['editForm'].resetFields();
-                            this.editFormVisible = false;
-                            this.getUsers();
-                        });
-                    });
-                }
-            });
-        },
-        //新增
-        addSubmit: function () {
-            console.log(this.saveForm)
-            this.$refs.saveForm.validate((valid) => {
-                if (valid) {
-                    this.$confirm('确认提交吗？', '提示', {}).then(() => {
                         this.addLoading = true;
-                        // let array = this.saveForm.parent;
                         let array = this.saveForm.parent;
                         if (array && array.length>0){
                             this.saveForm.parent ={
@@ -375,6 +351,95 @@ export default {
                     });
                 }
             });
+        },
+        //新增
+        addSubmit: function () {
+            console.log("提交saveForm",this.saveForm)
+            console.log("提交optionsValue",this.optionsValue)
+            // this.$refs.saveForm.validate((valid) => {
+            //     if (valid) {
+            //         this.$confirm('确认提交吗？', '提示', {}).then(() => {
+            //             this.addLoading = true;
+            //             // let array = this.saveForm.parent;
+            //             debugger
+            //             let array = this.saveForm.parent;
+            //             if (array && array.length>0){
+            //                 this.saveForm.parent ={
+            //                     id:array[array.length-1]
+            //                 }
+            //             }else{
+            //                 this.saveForm.parent={id:null}
+            //             }
+            //             console.log("最后saveForm",this.saveForm)
+            //             this.$http.post("/Departments/add", this.saveForm)
+            //                 .then(result => {
+            //                     result=result.data
+            //                     this.addLoading = false
+            //                     console.log("result",result)
+            //                     if (result.success){
+            //                         this.$message({
+            //                             message: '操作成功!',
+            //                             type: 'success'
+            //                         });
+            //                         this.saveFormVisible = false;
+            //                         this.getDepartments();
+            //                     }else{
+            //                         this.$message({
+            //                             message: result.msg,
+            //                             type: 'error'
+            //                         });
+            //                     }
+            //
+            //                 })
+            //                 .catch(result => {
+            //                     this.$message({
+            //                         message: '网络错误!',
+            //                         type: 'error'
+            //                     });
+            //                 })
+            //         });
+            //     }
+            // });
+            this.$confirm('确认提交吗？', '提示', {}).then(() => {
+                this.addLoading = true;
+                // let array = this.saveForm.parent;
+                debugger
+                let array = this.saveForm.parent.id;
+                if (array && array.length>0){
+                    this.saveForm.parent ={
+                        id:array[array.length-1]
+                    }
+                }else{
+                    this.saveForm.parent={id:null}
+                }
+                console.log("最后saveForm",this.saveForm)
+                this.$http.post("/Departments/add", this.saveForm)
+                    .then(result => {
+                        result=result.data
+                        this.addLoading = false
+                        console.log("result",result)
+                        if (result.success){
+                            this.$message({
+                                message: '操作成功!',
+                                type: 'success'
+                            });
+                            this.saveFormVisible = false;
+                            this.getDepartments();
+                        }else{
+                            this.$message({
+                                message: result.msg,
+                                type: 'error'
+                            });
+                        }
+
+                    })
+                    .catch(result => {
+                        this.$message({
+                            message: '网络错误!',
+                            type: 'error'
+                        });
+                    })
+            })
         },
         selsChange: function (sels) {
             this.sels = sels;
