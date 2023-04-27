@@ -7,7 +7,7 @@
 					<el-input v-model="filters.name" placeholder="查询关键字"></el-input>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" v-on:click="getUsers">查询</el-button>
+					<el-button type="primary" v-on:click="search">查询</el-button>
 				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" @click="handleAdd">新增</el-button>
@@ -30,12 +30,6 @@
 			<el-table-column prop="sn" label="权限标识" width="auto" sortable>
 			</el-table-column>
 			<el-table-column prop="parentId" label="父级权限" min-width="auto" sortable>
-			</el-table-column>
-			<el-table-column label="操作" width="150">
-				<template scope="scope">
-					<el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-					<el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
-				</template>
 			</el-table-column>
 		</el-table>
 
@@ -159,7 +153,7 @@
 						.then(result => {
 							this.listLoading = false
 							result = result.data
-							console.log(result.resultObj)
+							console.log("resultObj",result.resultObj)
 							this.allPermissions = result.resultObj.rows
 							this.total = result.resultObj.total
 						})
@@ -174,20 +168,15 @@
 				this.queryObj.currentPage = val
 				this.getAllPermissions()
 			},
-			//获取用户列表
-			getUsers() {
-				let para = {
-					page: this.page,
-					name: this.filters.name
-				};
-				this.listLoading = true;
-				//NProgress.start();
-				getUserListPage(para).then((res) => {
-					this.total = res.data.total;
-					this.users = res.data.users;
-					this.listLoading = false;
-					//NProgress.done();
-				});
+			search(){
+				this.listLoading = true
+				this.queryObj = {
+					keyword: this.filters.name,
+					currentPage: 1,
+					pageSize: 4
+				}
+				console.log(this.queryObj)
+				this.getAllPermissions()
 			},
 			//删除
 			handleDel: function (index, row) {
