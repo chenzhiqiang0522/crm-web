@@ -356,90 +356,90 @@ export default {
         addSubmit: function () {
             console.log("提交saveForm",this.saveForm)
             console.log("提交optionsValue",this.optionsValue)
-            // this.$refs.saveForm.validate((valid) => {
-            //     if (valid) {
-            //         this.$confirm('确认提交吗？', '提示', {}).then(() => {
-            //             this.addLoading = true;
-            //             // let array = this.saveForm.parent;
-            //             debugger
-            //             let array = this.saveForm.parent;
-            //             if (array && array.length>0){
-            //                 this.saveForm.parent ={
-            //                     id:array[array.length-1]
-            //                 }
-            //             }else{
-            //                 this.saveForm.parent={id:null}
-            //             }
-            //             console.log("最后saveForm",this.saveForm)
-            //             this.$http.post("/Departments/add", this.saveForm)
-            //                 .then(result => {
-            //                     result=result.data
-            //                     this.addLoading = false
-            //                     console.log("result",result)
-            //                     if (result.success){
-            //                         this.$message({
-            //                             message: '操作成功!',
-            //                             type: 'success'
-            //                         });
-            //                         this.saveFormVisible = false;
-            //                         this.getDepartments();
-            //                     }else{
-            //                         this.$message({
-            //                             message: result.msg,
-            //                             type: 'error'
-            //                         });
-            //                     }
-            //
-            //                 })
-            //                 .catch(result => {
-            //                     this.$message({
-            //                         message: '网络错误!',
-            //                         type: 'error'
-            //                     });
-            //                 })
-            //         });
-            //     }
-            // });
-            this.$confirm('确认提交吗？', '提示', {}).then(() => {
-                this.addLoading = true;
-                // let array = this.saveForm.parent;
-                debugger
-                let array = this.saveForm.parent.id;
-                if (array && array.length>0){
-                    this.saveForm.parent ={
-                        id:array[array.length-1]
-                    }
-                }else{
-                    this.saveForm.parent={id:null}
-                }
-                console.log("最后saveForm",this.saveForm)
-                this.$http.post("/Departments/add", this.saveForm)
-                    .then(result => {
-                        result=result.data
-                        this.addLoading = false
-                        console.log("result",result)
-                        if (result.success){
-                            this.$message({
-                                message: '操作成功!',
-                                type: 'success'
-                            });
-                            this.saveFormVisible = false;
-                            this.getDepartments();
+            this.$refs.saveForm.validate((valid) => {
+                if (valid) {
+                    this.$confirm('确认提交吗？', '提示', {}).then(() => {
+                        this.addLoading = true;
+                        // let array = this.saveForm.parent;
+                        debugger
+                        let array = this.saveForm.parent.id;
+                        if (array && array.length>0){
+                            this.saveForm.parent ={
+                                id:array[array.length-1]
+                            }
                         }else{
-                            this.$message({
-                                message: result.msg,
-                                type: 'error'
-                            });
+                            this.saveForm.parent={id:null}
                         }
+                        console.log("最后saveForm",this.saveForm)
+                        this.$http.post("/Departments/add", this.saveForm)
+                            .then(result => {
+                                result=result.data
+                                this.addLoading = false
+                                console.log("result",result)
+                                if (result.success){
+                                    this.$message({
+                                        message: '操作成功!',
+                                        type: 'success'
+                                    });
+                                    this.saveFormVisible = false;
+                                    this.getDepartments();
+                                }else{
+                                    this.$message({
+                                        message: result.msg,
+                                        type: 'error'
+                                    });
+                                }
 
-                    })
-                    .catch(result => {
-                        this.$message({
-                            message: '网络错误!',
-                            type: 'error'
-                        });
-                    })
-            })
+                            })
+                            .catch(result => {
+                                this.$message({
+                                    message: '网络错误!',
+                                    type: 'error'
+                                });
+                            })
+                    });
+                }
+            });
+            // this.$confirm('确认提交吗？', '提示', {}).then(() => {
+            //     this.addLoading = true;
+            //     // let array = this.saveForm.parent;
+            //     debugger
+            //     let array = this.saveForm.parent.id;
+            //     if (array && array.length>0){
+            //         this.saveForm.parent ={
+            //             id:array[array.length-1]
+            //         }
+            //     }else{
+            //         this.saveForm.parent={id:null}
+            //     }
+            //     console.log("最后saveForm",this.saveForm)
+            //     this.$http.post("/Departments/add", this.saveForm)
+            //         .then(result => {
+            //             result=result.data
+            //             this.addLoading = false
+            //             console.log("result",result)
+            //             if (result.success){
+            //                 this.$message({
+            //                     message: '操作成功!',
+            //                     type: 'success'
+            //                 });
+            //                 this.saveFormVisible = false;
+            //                 this.getDepartments();
+            //             }else{
+            //                 this.$message({
+            //                     message: result.msg,
+            //                     type: 'error'
+            //                 });
+            //             }
+            //
+            //         })
+            //         .catch(result => {
+            //             this.$message({
+            //                 message: '网络错误!',
+            //                 type: 'error'
+            //             });
+            //         })
+            // })
         },
         selsChange: function (sels) {
             this.sels = sels;

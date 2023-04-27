@@ -10,6 +10,7 @@ import Page5 from './views/nav2/Page5.vue'
 import Page6 from './views/nav3/Page6.vue'
 import echarts from './views/charts/echarts.vue'
 import Deparment from './views/org/Department.vue'
+import Authority from "./views/permission/Authority.vue";
 
 let routes = [
     {
@@ -31,6 +32,17 @@ let routes = [
         iconCls: 'el-icon-message',//图标样式class
         children: [
             { path: '/department', component: Deparment, name: '部门列表' },
+            { path: '/form', component: Form, name: 'Form' },
+            { path: '/user', component: user, name: '列表' },
+        ]
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '权限管理',
+        iconCls: 'el-icon-message',//图标样式class
+        children: [
+            { path: '/authority', component: Authority, name: '权限列表' },
             { path: '/form', component: Form, name: 'Form' },
             { path: '/user', component: user, name: '列表' },
         ]
