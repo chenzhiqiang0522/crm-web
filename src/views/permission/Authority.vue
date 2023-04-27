@@ -42,7 +42,7 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>
-			<el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :page-size="20" :total="total" style="float:right;">
+			<el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :page-size="queryObj.pageSize" :total="total" style="float:right;">
 			</el-pagination>
 		</el-col>
 
@@ -105,10 +105,6 @@
 </template>
 
 <script>
-	// import util from '../../common/js/util'
-	//import NProgress from 'nprogress'
-	// import { getUserListPage, removeUser, batchRemoveUser, editUser, addUser } from '../../api/api';
-
 	export default {
 		data() {
 			return {
@@ -116,6 +112,11 @@
 					name: ''
 				},
 				allPermissions: [],
+				queryObj:{
+					keyword: '',
+					currentPage: 1,
+					pageSize: 4
+				},
 				total: 0,
 				page: 1,
 				listLoading: false,
@@ -123,11 +124,6 @@
 
 				editFormVisible: false,//编辑界面是否显示
 				editLoading: false,
-				editFormRules: {
-					name: [
-						{ required: true, message: '请输入姓名', trigger: 'blur' }
-					]
-				},
 				//编辑界面数据
 				editForm: {
 					id: 0,
@@ -159,21 +155,24 @@
 		methods: {
 			getAllPermissions(){
 				this.listLoading = true;
-				this.$http.get("/Permissions")
+				this.$http.post("/Permissions/pageList",this.queryObj)
 						.then(result => {
 							this.listLoading = false
 							result = result.data
 							console.log(result.resultObj)
-							this.allPermissions = result.resultObj
+							this.allPermissions = result.resultObj.rows
+							this.total = result.resultObj.total
+						})
+						.catch(result => {
+							this.$message({
+								message:"网络开小差啦，请稍后再试！",
+								type:"error"
+							})
 						})
 			},
-			//性别显示转换
-			formatSex: function (row, column) {
-				return row.sex == 1 ? '男' : row.sex == 0 ? '女' : '未知';
-			},
 			handleCurrentChange(val) {
-				this.page = val;
-				this.getUsers();
+				this.queryObj.currentPage = val
+				this.getAllPermissions()
 			},
 			//获取用户列表
 			getUsers() {
