@@ -11,6 +11,7 @@ import Page6 from './views/nav3/Page6.vue'
 import echarts from './views/charts/echarts.vue'
 import Deparment from './views/org/Department.vue'
 import Authority from "./views/permission/Authority.vue";
+import Role from "./views/permission/Role.vue";
 
 let routes = [
     {
@@ -43,7 +44,7 @@ let routes = [
         iconCls: 'el-icon-message',//图标样式class
         children: [
             { path: '/authority', component: Authority, name: '权限列表' },
-            { path: '/form', component: Form, name: 'Form' },
+            { path: '/role', component: Role, name: '角色列表' },
             { path: '/user', component: user, name: '列表' },
         ]
     },
