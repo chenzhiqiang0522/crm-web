@@ -132,27 +132,6 @@
 				this.queryObj.keyword = this.filters.name
 				this.getAllRoles()
 			},
-			//删除
-			handleDel: function (index, row) {
-				this.$confirm('确认删除该角色吗?', '提示', {
-					type: 'warning'
-				}).then(() => {
-					this.listLoading = true;
-					//NProgress.start();
-					let para = { id: row.id };
-					removeUser(para).then((res) => {
-						this.listLoading = false;
-						//NProgress.done();
-						this.$message({
-							message: '删除成功',
-							type: 'success'
-						});
-						this.getUsers();
-					});
-				}).catch(() => {
-
-				});
-			},
 			//显示编辑界面,数据回显
 			 handleEdit: function (index, row) {
 				this.saveFormVisible = true;
@@ -267,26 +246,60 @@
 				});
 			},
 			selsChange: function (sels) {
+				// console.log(sels)
 				this.sels = sels;
 			},
-			//批量删除
-			batchRemove: function () {
-				var ids = this.sels.map(item => item.id).toString();
-				this.$confirm('确认删除选中记录吗？', '提示', {
+			//删除
+			handleDel: function (index, row) {
+				this.$confirm('确认删除该角色吗?', '提示', {
 					type: 'warning'
 				}).then(() => {
 					this.listLoading = true;
-					//NProgress.start();
-					let para = { ids: ids };
-					batchRemoveUser(para).then((res) => {
-						this.listLoading = false;
-						//NProgress.done();
-						this.$message({
-							message: '删除成功',
-							type: 'success'
-						});
-						this.getUsers();
-					});
+					this.$http.delete("/Roles/"+row.id)
+							.then(result => {
+								this.$message({
+									type:"success",
+									message:result.data.msg
+								})
+								this.getAllRoles()
+								this.listLoading = false
+							})
+							.catch(()=>{
+								this.$message({
+									type:"error",
+									message:"网络出错啦，请稍后再试"
+								})
+							})
+				}).catch(() => {
+
+				});
+			},
+			//批量删除
+			batchRemove: function () {
+				this.listLoading = true
+				var ids = this.sels.map(item => item.id);
+				// console.log("ids",ids)
+				this.$confirm('确认删除选中记录吗？', '提示', {
+					type: 'warning'
+				}).then(() => {
+					// let idsObj = {ids:ids}
+					this.$http.patch("/Roles/patchDeleteRoles",ids)
+							.then(result =>{
+								result = result.data
+								this.$message({
+									type:"success",
+									message:result.msg
+								})
+								this.getAllRoles()
+								this.listLoading = false
+							})
+							.catch(result => {
+								this.listLoading = false
+								this.$message({
+									type:"error",
+									message:"网络出错啦，请稍后再试"
+								})
+							})
 				}).catch(() => {
 
 				});
