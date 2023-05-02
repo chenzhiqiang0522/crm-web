@@ -25,10 +25,11 @@
 			</el-table-column>
 			<el-table-column prop="sn" label="角色标识" width="auto" sortable>
 			</el-table-column>
-			<el-table-column label="操作" width="150">
+			<el-table-column label="操作" width="auto">
 				<template scope="scope">
 					<el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
 					<el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+					<el-button type="danger" size="small" @click="changePermission(scope.$index, scope.row)">设置权限</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -56,6 +57,36 @@
 				<el-button type="primary" @click.native="saveSubmit" :loading="saveLoading">提交</el-button>
 			</div>
 		</el-dialog>
+
+<!--		授权弹框-->
+		<el-dialog title="设置权限" :visible.sync="setPermissionVisible" :close-on-click-modal="false">
+			<el-form :model="rolePermission" label-width="80px" ref="setPermissionForm">
+				<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+				<div class="checkbox-table" v-for="(p,indexkey) in permissionTree" :key="p.sn">
+					<template>
+						<el-checkbox class="check1" style="font-weight: 600;margin-bottom: 15px "
+												 v-model='rolePermission.permissionSns' :label="p.sn"
+												 @change='handleCheck(1,indexkey)'>
+							{{p.name}}
+						</el-checkbox>
+						<div style="margin-bottom: 20px;">
+							<div v-for="c in p.children" class="line-check" :key="c.sn"
+									 style="display: inline-block; margin-left: 20px;margin-bottom: 20px;" >
+								<el-checkbox class="check2" @change='handleCheck(2,indexkey)'
+														 v-model="rolePermission.permissionSns" :label="c.sn">
+									{{c.name}}
+								</el-checkbox>
+							</div>
+						</div>
+					</template>
+				</div>
+				{{rolePermission.permissionSns}}
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click.native="setPermissionVisible = false">取消</el-button>
+				<el-button type="primary" @click.native="saveRolePermission" :loading="saveLoading">提交</el-button>
+			</div>
+		</el-dialog>
 	</section>
 </template>
 
@@ -67,6 +98,15 @@
 	export default {
 		data() {
 			return {
+				permissionTree:[],		// 获取权限树，包括一级权限和一级权限所对应的二级权限
+				checkAll:[],
+				isIndeterminate:false,
+				allPermissionSns:[],		// 全部权限的sn
+				rolePermission: {
+					roleId:null,
+					permissionSns:[]		// 已选中权限的sn
+				},
+				setPermissionVisible:false,
 				filters: {
 					name: ''
 				},
@@ -106,9 +146,106 @@
 			}
 		},
 		methods: {
-			//性别显示转换
-			formatSex: function (row, column) {
-				return row.sex == 1 ? '男' : row.sex == 0 ? '女' : '未知';
+			saveRolePermission(){
+				this.$confirm('确认提交吗？', '提示', {}).then(() => {
+					this.saveLoading = true;
+					//NProgress.start();
+					let para = this.rolePermission
+					this.$http.post("/Roles/setPermission",para)
+							.then(result => {
+								result = result.data
+								this.saveLoading = false
+								if (result.success){
+									this.$message({
+										type:"success",
+										message:"权限设置成功"
+									})
+									this.setPermissionVisible = false
+								}else{
+									this.$message({
+										type:"error",
+										message:result.msg
+									})
+								}
+							})
+				});
+			},
+			changePermission(index, row){
+				this.setPermissionVisible = true
+				this.getPermissionTree()
+				this.rolePermission.roleId = row.id
+			},
+			getPermissionTree(){
+				// 获取一级权限和二级权限
+				this.$http.get("/Permissions/permissionTree")
+						.then(result => {
+							result = result.data
+							if (result.success){
+								this.permissionTree = result.resultObj
+								if (this.permissionTree && this.permissionTree.length>0){
+									for (let i = 0; i < this.permissionTree.length; i++) {
+										this.allPermissionSns.push(this.permissionTree[i].sn)
+										let children = this.permissionTree[i].children
+										for (let j = 0; j < children.length; j++) {
+											this.allPermissionSns.push(children[j].sn)
+										}
+									}
+								}
+							}else {
+								this.$message({
+									type:"error",
+									message:"权限查询失败"
+								})
+							}
+						})
+			},
+			handleCheckAllChange(val){
+				this.rolePermission.permissionSns = val ? this.allPermissionSns : [];
+				this.isIndeterminate = false;
+			},
+			// 处理选择事件  type 1:一级权限2:二级权限   a：一级权限的索引位置
+			handleCheck(type, a = 0) { // 多选框
+				// 在已选中的权限列表中，查看是否存在一级权限 >-1 存在  <0 不存在
+				let indexOf = this.rolePermission.permissionSns.indexOf(this.permissionTree[a].sn);
+				if (type == 2) { // 二级菜单点击
+					let index = 0;  //
+					this.permissionTree[a].children.map(item => {
+						// 已选中的权限列表中，是否包含当前一级权限下的某个子权限
+						if (this.rolePermission.permissionSns.indexOf(item.sn) > -1) {
+							index += 1;
+						}
+					})
+					if (index > 0) {  // 已选中的权限列表中，包含当前一级权限下的某个子权限
+						if (indexOf < 0) {  // 已选中的权限列表中，没有当前一级权限，则添加到已选中的权限列表中
+							this.rolePermission.permissionSns.push(this.permissionTree[a].sn);
+						}
+					} else {  // // 已选中的权限列表中，不包含当前一级权限下的某个子权限
+						if (indexOf > -1) {// 已选中的权限列表中，有当前一级权限，则删除
+							this.rolePermission.permissionSns.splice(indexOf, 1);
+						}
+					}
+				} else {  // 一级菜单点击
+					if (indexOf > -1) { // 已选中的权限中，包含当前一级权限，则将该一级权限下所有的子权限选中
+						this.permissionTree[a].children.map(item => {
+							if (this.rolePermission.permissionSns.findIndex((n) => n == item.sn) < 0) {
+								this.rolePermission.permissionSns.push(item.sn)
+							}
+						})
+					} else {
+						// 已选中的权限中，不包含当前一级权限，则将该一级权限下所有的子权限移除
+						this.permissionTree[a].children.map(item => {
+							if (this.rolePermission.permissionSns.findIndex((n) => n == item.sn) > -1) {
+								this.rolePermission.permissionSns.splice(this.rolePermission.permissionSns.findIndex((n) => n == item.sn), 1);
+							}
+						})
+					}
+				}
+				// 获取已选中的长度
+				let checkedCount = this.rolePermission.permissionSns.length;
+				// 如果已选中的长度==所有权限的长度，则checkAll=true，也就是全选框被选中
+				this.checkAll = checkedCount === this.allPermissionSns.length;
+				// 如果已选中的长度>0并且已选中的长度<所有权限的长度，则全选框是一个横杠
+				this.isIndeterminate = checkedCount > 0 && checkedCount < this.allPermissionSns.length;
 			},
 			// 页码切换
 			handleCurrentChange(val) {
