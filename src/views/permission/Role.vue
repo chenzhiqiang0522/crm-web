@@ -174,6 +174,19 @@
 				this.setPermissionVisible = true
 				this.getPermissionTree()
 				this.rolePermission.roleId = row.id
+				this.getPermissionByRoleId(row.id)
+			},
+			getPermissionByRoleId(roleId){
+				this.$http.get("/Roles/getPermissionSns/"+roleId)
+						.then(result => {
+							result = result.data
+							if (result.success){
+								this.rolePermission.permissionSns = result.resultObj
+							}
+							let checkedCount = this.rolePermission.permissionSns.length;
+							this.checkAll = checkedCount === this.allPermissionSns.length;
+							this.isIndeterminate = checkedCount > 0 && checkedCount < this.allPermissionSns.length;
+						})
 			},
 			getPermissionTree(){
 				// 获取一级权限和二级权限
@@ -444,6 +457,7 @@
 		},
 		mounted() {
 			this.getAllRoles();
+			this.getPermissionTree()
 		}
 	}
 
