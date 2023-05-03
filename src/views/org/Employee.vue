@@ -55,38 +55,25 @@
         <!--新增界面-->
         <el-dialog title = "新增" v-bind:visible.sync = "saveFormVisible" :close-on-click-modal = "false">
             <el-form :model = "saveForm" label-width = "80px" :rules = "saveFormRules" ref = "saveForm">
-                <el-form-item label = "部门名称" prop = "name">
-                    <el-input v-model = "saveForm.name" auto-complete = "off"></el-input>
+                <el-form-item label = "员工名字" prop = "username">
+                    <el-input v-model = "saveForm.username" auto-complete = "on"></el-input>
                 </el-form-item>
-                <el-form-item label = "部门介绍">
-                    <el-input type = "textarea" rows = "2" v-model = "saveForm.intro"></el-input>
+                <el-form-item label = "密码" prop = "password" v-if = "saveForm.id == null || saveForm.id == ''">
+                    <el-input v-model = "saveForm.password" auto-complete = "on"></el-input>
                 </el-form-item>
-                <el-form-item label = "状态">
-                    <el-radio v-model = "saveForm.state" :label = "1">正常</el-radio>
-                    <el-radio v-model = "saveForm.state" :label = "0">弃用</el-radio>
+                <el-form-item label = "电子邮箱" prop = "email">
+                    <el-input v-model = "saveForm.email" auto-complete = "on"></el-input>
                 </el-form-item>
-                <el-form-item label = "部门经理">
-                    <!--                    <el-input v-model = "saveForm.manager.username" ></el-input>-->
-                    <el-select v-model = "saveForm.manager.id" filterable placeholder = "请选择">
-                        <el-option
-                                v-for = "item in options"
-                                :key = "item.value"
-                                :label = "item.label"
-                                :value = "item.value">
-                        </el-option>
-                    </el-select>
+                <el-form-item label = "头像" prop = "headImage">
+                    <el-input v-model = "saveForm.headImage" auto-complete = "on"></el-input>
                 </el-form-item>
-                <el-form-item label = "父部门">
-                    <!--                    <el-input v-model = "saveForm.parent.name"></el-input>-->
-                    <el-cascader
-                            v-model="saveForm.parent.id"
-                            :options="cascaderOptions"
-                            :props="{ expandTrigger: 'hover',
-                         label:'name',
-                         value:'id',
-                         children:'childDepartments',
-                         checkStrictly:true}"></el-cascader>
+                <el-form-item label = "年龄" prop = "age">
+                    <el-input v-model = "saveForm.age" auto-complete = "on"></el-input>
                 </el-form-item>
+                <el-form-item label = "所属部门" prop = "departmentId">
+                    <el-input v-model = "saveForm.departmentId" auto-complete = "on"></el-input>
+                </el-form-item>
+
 
             </el-form>
             <div slot = "footer" class = "dialog-footer">
@@ -126,15 +113,16 @@ export default {
             },
             //新增界面数据
             saveForm: {
+                id: '',
                 username: '',
-                password:'',
-                email:'',
-                headImage:'',
-                age:'',
-                departmentId:''
+                password: '',
+                email: '',
+                headImage: '',
+                age: '',
+                departmentId: ''
 
             },
-            cascaderOptions:[],
+            cascaderOptions: [],
             queryObject: {
                 keyword: '',
                 currentPage: 1,
@@ -178,9 +166,9 @@ export default {
             // console.log(this.queryObject)
             this.$http.get("/Departments/departmentTree")
                 .then(result => {
-                    console.log("resultObj",result.data.resultObj)
+                    console.log("resultObj", result.data.resultObj)
                     this.cascaderOptions = result.data.resultObj
-                    console.log("cascaderOptions",this.cascaderOptions)
+                    console.log("cascaderOptions", this.cascaderOptions)
                 })
                 .catch(result => {
                     this.$message({
@@ -191,7 +179,7 @@ export default {
         },
         //删除
         handleDel: function (index, row) {
-            console.log("删除对象的id",row.id)
+            console.log("删除对象的id", row.id)
             this.$confirm('确认删除该员工吗?', '提示', {
                 type: 'warning'
             }).then(() => {
@@ -205,7 +193,7 @@ export default {
                             type: 'success'
                         })
                         this.queryObject.currentPage = 1
-                        this.getDepartments()
+                        this.getEmployees()
                         // console.log(result.data)
 
                     })
@@ -216,23 +204,10 @@ export default {
         //显示编辑界面
         handleEdit: function (index, row) {
             this.getEmployees();
-            this.getDepartmentTree()
-            console.log("row",row)
+            // this.getDepartmentTree()
+            console.log("row", row)
             this.saveForm = Object.assign({}, row);
-            console.log("未修改saveForm",this.saveForm)
-            if (this.saveForm.manager == null){
-                this.saveForm.manager={
-                    id:null,
-                    username:null
-                }
-            }
-            if (this.saveForm.parent == null)
-                this.saveForm.parent = {
-                    id: null,
-                    name: null
-                }
-            this.optionsValue = this.saveForm.manager.id
-            console.log("optionsValue",this.optionsValue)
+            console.log("未修改saveForm", this.saveForm)
             this.saveFormVisible = true;
         },
         //显示新增界面
@@ -240,15 +215,7 @@ export default {
             this.saveFormVisible = true;
             this.getEmployees();
             this.getDepartmentTree()
-            this.optionsValue=0
-            this.saveForm = {
-                username: '',
-                password:'',
-                email:'',
-                headImage:'',
-                age:'',
-                departmentId:''
-            };
+            this.optionsValue = 0
         },
         //编辑
         editSubmit: function () {
@@ -257,26 +224,26 @@ export default {
                     this.$confirm('确认提交吗？', '提示', {}).then(() => {
                         this.addLoading = true;
                         let array = this.saveForm.parent;
-                        if (array && array.length>0){
-                            this.saveForm.parent ={
-                                id:array[array.length-1]
+                        if (array && array.length > 0) {
+                            this.saveForm.parent = {
+                                id: array[array.length - 1]
                             }
-                        }else{
-                            this.saveForm.parent={id:null}
+                        } else {
+                            this.saveForm.parent = {id: null}
                         }
                         this.$http.post("/Departments/add", this.saveForm)
                             .then(result => {
-                                result=result.data
+                                result = result.data
                                 this.addLoading = false
-                                console.log("result",result)
-                                if (result.success){
+                                console.log("result", result)
+                                if (result.success) {
                                     this.$message({
                                         message: '操作成功!',
                                         type: 'success'
                                     });
                                     this.saveFormVisible = false;
                                     this.getDepartments();
-                                }else{
+                                } else {
                                     this.$message({
                                         message: result.msg,
                                         type: 'error'
@@ -296,92 +263,83 @@ export default {
         },
         //新增
         addSubmit: function () {
-            console.log("提交saveForm",this.saveForm)
-            console.log("提交optionsValue",this.optionsValue)
+            console.log("提交saveForm", this.saveForm)
+            console.log("提交optionsValue", this.optionsValue)
             this.$refs.saveForm.validate((valid) => {
                 if (valid) {
                     this.$confirm('确认提交吗？', '提示', {}).then(() => {
                         this.addLoading = true;
-                        // let array = this.saveForm.parent;
-                        debugger
-                        let array = this.saveForm.parent.id;
-                        if (array && array.length>0){
-                            this.saveForm.parent ={
-                                id:array[array.length-1]
-                            }
-                        }else{
-                            this.saveForm.parent={id:null}
-                        }
-                        console.log("最后saveForm",this.saveForm)
-                        this.$http.post("/Departments/add", this.saveForm)
-                            .then(result => {
-                                result=result.data
-                                this.addLoading = false
-                                console.log("result",result)
-                                if (result.success){
+                        console.log("最后saveForm", this.saveForm)
+                        if (this.saveForm.id == null || this.saveForm.id == '') {
+                            this.$http.post("/Employees/addEmployee", this.saveForm)
+                                .then(result => {
+                                    let tempForm = this.saveForm
+                                    result = result.data
+                                    this.addLoading = false
+                                    console.log("result", result)
+                                    if (result.success) {
+                                        this.$message({
+                                            message: '操作成功!',
+                                            type: 'success'
+                                        });
+                                        this.saveForm = {
+                                            username: '',
+                                            password: '',
+                                            email: '',
+                                            headImage: '',
+                                            age: '',
+                                            departmentId: ''
+                                        };
+                                        this.saveFormVisible = false;
+                                        this.getEmployees()
+                                    } else {
+                                        this.addLoading = false
+                                        this.$message({
+                                            message: result.msg,
+                                            type: 'error'
+                                        });
+                                    }
+
+                                })
+                                .catch(result => {
+                                    this.addLoading = false
                                     this.$message({
-                                        message: '操作成功!',
-                                        type: 'success'
-                                    });
-                                    this.saveFormVisible = false;
-                                    this.getDepartments();
-                                }else{
-                                    this.$message({
-                                        message: result.msg,
+                                        message: '网络错误!',
                                         type: 'error'
                                     });
-                                }
+                                })
+                        } else {
+                            this.$http.post("/Employees/modifyEmployee", this.saveForm)
+                                .then(result => {
+                                    result = result.data
+                                    this.addLoading = false
+                                    console.log("result", result)
+                                    if (result.success) {
+                                        this.$message({
+                                            message: '操作成功!',
+                                            type: 'success'
+                                        });
+                                        this.saveFormVisible = false;
+                                        this.getEmployees()
+                                    } else {
+                                        this.$message({
+                                            message: result.msg,
+                                            type: 'error'
+                                        });
+                                    }
 
-                            })
-                            .catch(result => {
-                                this.$message({
-                                    message: '网络错误!',
-                                    type: 'error'
-                                });
-                            })
+                                })
+                                .catch(result => {
+                                    this.addLoading = false
+                                    this.$message({
+                                        message: '网络错误!',
+                                        type: 'error'
+                                    });
+                                })
+                        }
                     });
                 }
             });
-            // this.$confirm('确认提交吗？', '提示', {}).then(() => {
-            //     this.addLoading = true;
-            //     // let array = this.saveForm.parent;
-            //     debugger
-            //     let array = this.saveForm.parent.id;
-            //     if (array && array.length>0){
-            //         this.saveForm.parent ={
-            //             id:array[array.length-1]
-            //         }
-            //     }else{
-            //         this.saveForm.parent={id:null}
-            //     }
-            //     console.log("最后saveForm",this.saveForm)
-            //     this.$http.post("/Departments/add", this.saveForm)
-            //         .then(result => {
-            //             result=result.data
-            //             this.addLoading = false
-            //             console.log("result",result)
-            //             if (result.success){
-            //                 this.$message({
-            //                     message: '操作成功!',
-            //                     type: 'success'
-            //                 });
-            //                 this.saveFormVisible = false;
-            //                 this.getDepartments();
-            //             }else{
-            //                 this.$message({
-            //                     message: result.msg,
-            //                     type: 'error'
-            //                 });
-            //             }
-            //
-            //         })
-            //         .catch(result => {
-            //             this.$message({
-            //                 message: '网络错误!',
-            //                 type: 'error'
-            //             });
-            //         })
-            // })
         },
         selsChange: function (sels) {
             this.sels = sels;
@@ -389,25 +347,29 @@ export default {
         //批量删除
         batchRemove: function () {
             var ids = this.sels.map(item => item.id)
-            this.$confirm('确认删除选中记录吗？', '提示', {
+            this.$confirm('确认删除选中员工信息吗？', '提示', {
                 type: 'warning'
             }).then(() => {
                 this.listLoading = true;
                 //NProgress.start();
                 let para = {ids: ids};
                 console.log("para", para.ids)
-                this.$http.patch("/Departments/patchDelete", para.ids).then(result => {
-                    this.$message({
-                        type: "success",
-                        message: result.data.msg
+                this.$http.patch("/Employees/patchDelete", para.ids)
+                    .then(result => {
+                        debugger
+                        this.$message({
+                            type: "success",
+                            message: result.data.msg
+                        })
+                        this.getEmployees()
+                        this.listLoading = false;
                     })
-                    this.getDepartments()
-                })
                     .catch(() => {
                         this.$message({
                             type: "error",
                             message: "网络开小差啦，请稍后再试!"
                         })
+                        this.listLoading = false;
                     })
             });
         },
