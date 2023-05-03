@@ -88,7 +88,6 @@
 					console.log(this.queryObj)
             this.$http.post("/Permissions/pageList", this.queryObj)
                 .then(result => {
-									debugger
                     this.listLoading = false
                     result = result.data
                     console.log("resultObj", result.resultObj)

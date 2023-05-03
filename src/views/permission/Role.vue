@@ -172,7 +172,7 @@
 			},
 			changePermission(index, row){
 				this.setPermissionVisible = true
-				this.getPermissionTree()
+				// this.getPermissionTree()
 				this.rolePermission.roleId = row.id
 				this.getPermissionByRoleId(row.id)
 			},
@@ -193,6 +193,7 @@
 				this.$http.get("/Permissions/permissionTree")
 						.then(result => {
 							result = result.data
+							console.log("permissionTree",result)
 							if (result.success){
 								this.permissionTree = result.resultObj
 								if (this.permissionTree && this.permissionTree.length>0){
