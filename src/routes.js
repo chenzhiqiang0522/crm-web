@@ -13,6 +13,7 @@ import Deparment from './views/org/Department.vue'
 import Authority from "./views/permission/Authority.vue";
 import Role from "./views/permission/Role.vue";
 import Employee from "./views/org/Employee.vue";
+import OperateMenu from "./views/permission/OperateMenu.vue";
 
 let routes = [
     {
@@ -46,7 +47,7 @@ let routes = [
         children: [
             {path: '/authority', component: Authority, name: '权限列表'},
             {path: '/role', component: Role, name: '角色列表'},
-            {path: '/user', component: user, name: '列表'},
+            {path: '/menu', component: OperateMenu, name: '菜单列表'},
         ]
     },
     //{ path: '/main', component: Main },

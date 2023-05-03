@@ -30,6 +30,7 @@
 					<el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
 					<el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
 					<el-button type="danger" size="small" @click="changePermission(scope.$index, scope.row)">设置权限</el-button>
+					<el-button type="danger" size="small" @click="changePermission(scope.$index, scope.row)">设置菜单</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
