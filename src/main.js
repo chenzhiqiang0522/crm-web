@@ -23,7 +23,7 @@ Vue.prototype.$http = Axios
 //NProgress.configure({ showSpinner: false });
 
 const router = new VueRouter({
-  routes
+    routes
 })
 
 // router.beforeEach((to, from, next) => {
@@ -43,12 +43,42 @@ const router = new VueRouter({
 //NProgress.done();
 //});
 
-new Vue({
-  //el: '#app',
-  //template: '<App/>',
-  router,
-  store,
-  //components: { App }
-  render: h => h(App)
-}).$mount('#app')
+// axios请求拦截器:添加请求拦截器，在请求头中加token
+Axios.interceptors.request.use(
+    config => {
+        // 从localStorage中获取token
+        let token = localStorage.getItem("token");
 
+        // 如果token有值,我们就放到请求头里面
+        if (token) {
+            config.headers.token = token;
+        }
+        return config
+    },
+    error => {
+        return Promise.reject(error)
+    })
+// 响应拦截器
+Axios.interceptors.response.use(function(response){
+    //对返回的数据进行操作
+    let result = response.data;  // response.data 就是后端返给我们的数据
+    console.log(result)
+    if(!result.success && result.msg == "noLogin"){ // 说明未登录,被拦截了,那么就要跳回到登陆页面
+        alert(result.msg)
+        router.push({ path: '/login' });  // 跳转回登陆页面,让用户登陆
+        return response
+    }else{
+        return response
+    }
+},function(err){
+    return Promise.reject(err)
+})
+
+new Vue({
+    //el: '#app',
+    //template: '<App/>',
+    router,
+    store,
+    //components: { App }
+    render: h => h(App)
+}).$mount('#app')

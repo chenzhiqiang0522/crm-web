@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "axios": "^0.15.3",
+    "child_process": "^1.0.2",
     "echarts": "^3.3.2",
     "element-ui": "^2.15.1",
     "font-awesome": "^4.7.0",
+    "fs": "0.0.1-security",
     "nprogress": "^0.2.0",
     "vue": "^2.2.2",
     "vue-router": "^2.3.0",

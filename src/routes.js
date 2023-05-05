@@ -31,6 +31,16 @@ let routes = [
     {
         path: '/',
         component: Home,
+        name: '首页',
+        iconCls: 'fa fa-bar-chart',
+        leaf: true,
+        children: [
+            {path: '/echarts', component: echarts, name: 'echarts'}
+        ]
+    },
+    {
+        path: '/',
+        component: Home,
         name: '机构管理',
         iconCls: 'el-icon-message',//图标样式class
         children: [
@@ -83,15 +93,15 @@ let routes = [
             {path: '/page6', component: Page6, name: '导航三'}
         ]
     },
-    {
-        path: '/',
-        component: Home,
-        name: 'Charts',
-        iconCls: 'fa fa-bar-chart',
-        children: [
-            {path: '/echarts', component: echarts, name: 'echarts'}
-        ]
-    },
+    // {
+    //     path: '/',
+    //     component: Home,
+    //     name: 'Charts',
+    //     iconCls: 'fa fa-bar-chart',
+    //     children: [
+    //         {path: '/echarts', component: echarts, name: 'echarts'}
+    //     ]
+    // },
     {
         path: '*',
         hidden: true,

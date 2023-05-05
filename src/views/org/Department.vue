@@ -217,17 +217,21 @@ export default {
             // console.log(this.queryObject)
             this.$http.post("/Departments/pageList", this.queryObject)
                 .then(result => {
-                    // console.log("resultObj.rows",result.data.resultObj.rows)
-                    // console.log("resultObj",result.data.resultObj)
-                    this.departments = result.data.resultObj.rows
-                    this.total = result.data.resultObj.total
-                    // console.log(this.departments)
+                    if (result.data.success){
+                        // console.log("resultObj.rows",result.data.resultObj.rows)
+                        // console.log("resultObj",result.data.resultObj)
+                        console.log("result",result)
+                        this.departments = result.data.resultObj.rows
+                        this.total = result.data.resultObj.total
+                        // console.log(this.departments)
+                    }
                 })
                 .catch(result => {
                     this.$message({
-                        message: '网络出现错误!请稍后再试',
+                        message: '网络出现错误!请稍后再试11111',
                         type: 'error'
                     })
+                    // console.log("result",result)
                 })
         },
         getDepartmentTree() {

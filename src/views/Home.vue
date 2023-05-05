@@ -109,8 +109,20 @@
 				this.$confirm('确认退出吗?', '提示', {
 					//type: 'warning'
 				}).then(() => {
-					sessionStorage.removeItem('user');
-					_this.$router.push('/login');
+					// localStorage.removeItem('token');
+					// localStorage.removeItem("loginuser")
+					// this.$http.post("/logOut")
+					// _this.$router.push('/login');
+					this.$http.post("/logOut")
+							.then(result => {
+								result = result.data
+								console.log(result)
+								if (result.success){
+									localStorage.removeItem('token')
+									localStorage.removeItem('loginUser')
+									this.$router.push("/login")
+								}
+							})
 				}).catch(() => {
 
 				});
