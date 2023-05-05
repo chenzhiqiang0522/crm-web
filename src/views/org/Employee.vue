@@ -150,10 +150,18 @@ export default {
             // console.log(this.queryObject)
             this.$http.post("/Employees/pageList", this.queryObject)
                 .then(result => {
-                    result = result.data
-                    console.log(result)
-                    this.total = result.resultObj.total
-                    this.employees = result.resultObj.rows
+                    console.log("result(EmployeePageList)",result)
+                    if (result.data.success){
+                        result = result.data
+                        console.log(result)
+                        this.total = result.resultObj.total
+                        this.employees = result.resultObj.rows
+                    }else{
+                        this.$message({
+                            message: result.data.msg,
+                            type: 'error'
+                        })
+                    }
                 })
                 .catch(result => {
                     this.$message({
