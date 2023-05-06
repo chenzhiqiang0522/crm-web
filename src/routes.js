@@ -48,7 +48,7 @@ let routes = [
         iconCls: 'fa fa-bar-chart',
         leaf: true,
         children: [
-            {path: '/echarts', component: echarts, name: 'echarts'}
+            {path: '/echarts', component: echarts, name: '首页'}
         ]
     },
     {
