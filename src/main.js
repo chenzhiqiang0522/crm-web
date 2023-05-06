@@ -60,6 +60,7 @@ Axios.interceptors.request.use(
     })
 // 响应拦截器
 Axios.interceptors.response.use(function(response){
+    console.log("response",response)
     //对返回的数据进行操作
     let result = response.data;  // response.data 就是后端返给我们的数据
     console.log(result)
@@ -67,6 +68,9 @@ Axios.interceptors.response.use(function(response){
         alert(result.msg)
         router.push({ path: '/login' });  // 跳转回登陆页面,让用户登陆
         return response
+    }else if (!result.success && result.msg=="forbidden"){
+        router.push({ path: '/403' });
+        return response;
     }else{
         return response
     }

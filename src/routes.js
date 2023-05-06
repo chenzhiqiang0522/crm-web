@@ -1,5 +1,6 @@
 import Login from './views/Login.vue'
 import NotFound from './views/404.vue'
+import Forbidden from './views/403.vue'
 import Home from './views/Home.vue'
 import Main from './views/Main.vue'
 import Table from './views/nav1/Table.vue'
@@ -27,6 +28,18 @@ let routes = [
         component: NotFound,
         name: '',
         hidden: true
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '',
+        hidden: true,
+        children: [
+            {
+                path: '/403',
+                component: Forbidden
+            }
+        ]
     },
     {
         path: '/',

@@ -24,6 +24,50 @@
 			<aside :class="collapsed?'menu-collapsed':'menu-expanded'">
 				<!--导航菜单-->
 				<el-menu :default-active="$route.path" class="el-menu-vertical-demo" @open="handleopen" @close="handleclose" @select="handleselect"
+								 unique-opened router v-show="!collapsed">
+					<el-menu-item
+							index = "/echarts"
+							key = "/echarts">
+						<i class="fa fa-bar-chart"></i>
+						首页
+					</el-menu-item>
+					<template v-for="(item,index) in menuTree">
+						<el-submenu :index="index+''">
+							<template slot="title"><i :class="item.icon"></i>{{item.name}}</template>
+							<el-menu-item
+									v-for = "child in item.childMenu"
+									:index = "child.url"
+									:key = "child.url"
+									v-if="item.childMenu.length>0">
+								{{ child.name }}
+							</el-menu-item>
+						</el-submenu>
+					</template>
+				</el-menu>
+			</aside>
+			<section class="content-container">
+				<div class="grid-content bg-purple-light">
+					<el-col :span="24" class="breadcrumb-container">
+						<strong class="title">{{$route.name}}</strong>
+						<el-breadcrumb separator="/" class="breadcrumb-inner">
+							<el-breadcrumb-item v-for="item in $route.matched" :key="item.path">
+								{{ item.name }}
+							</el-breadcrumb-item>
+						</el-breadcrumb>
+					</el-col>
+					<el-col :span="24" class="content-wrapper">
+						<transition name="fade" mode="out-in">
+							<router-view></router-view>
+						</transition>
+					</el-col>
+				</div>
+			</section>
+		</el-col>
+<!--		 菜单备份-->
+<!--		<el-col :span="24" class="main">
+			<aside :class="collapsed?'menu-collapsed':'menu-expanded'">
+				&lt;!&ndash;导航菜单&ndash;&gt;
+				<el-menu :default-active="$route.path" class="el-menu-vertical-demo" @open="handleopen" @close="handleclose" @select="handleselect"
 					 unique-opened router v-show="!collapsed">
 					<template v-for="(item,index) in $router.options.routes" v-if="!item.hidden">
 						<el-submenu :index="index+''" v-if="!item.leaf">
@@ -33,7 +77,7 @@
 						<el-menu-item v-if="item.leaf&&item.children.length>0" :index="item.children[0].path"><i :class="item.iconCls"></i>{{item.children[0].name}}</el-menu-item>
 					</template>
 				</el-menu>
-				<!--导航菜单-折叠后-->
+				&lt;!&ndash;导航菜单-折叠后&ndash;&gt;
 				<ul class="el-menu el-menu-vertical-demo collapsed" v-show="collapsed" ref="menuCollapsed">
 					<li v-for="(item,index) in $router.options.routes" v-if="!item.hidden" class="el-submenu item">
 						<template v-if="!item.leaf">
@@ -67,7 +111,7 @@
 					</el-col>
 				</div>
 			</section>
-		</el-col>
+		</el-col>-->
 	</el-row>
 </template>
 
@@ -75,6 +119,7 @@
 	export default {
 		data() {
 			return {
+				loginUer:'',
 				sysName:'客户关系管理系统',
 				collapsed:false,
 				sysUserName: '',
@@ -88,7 +133,8 @@
 					type: [],
 					resource: '',
 					desc: ''
-				}
+				},
+				menuTree:[]
 			}
 		},
 		methods: {
@@ -135,16 +181,26 @@
 			},
 			showMenu(i,status){
 				this.$refs.menuCollapsed.getElementsByClassName('submenu-hook-'+i)[0].style.display=status?'block':'none';
+			},
+			getMenuTree(){
+				this.loginUer = localStorage.getItem('loginUser');
+				this.loginUer = JSON.parse(this.loginUer)
+				this.$http.get("/OperateMenu/tree/"+this.loginUer.id)
+						.then(result => {
+							result = result.data
+							console.log(result)
+							this.menuTree = result.resultObj
+						})
 			}
 		},
 		mounted() {
-			var user = sessionStorage.getItem('user');
+			var user = localStorage.getItem('loginUser');
 			if (user) {
 				user = JSON.parse(user);
-				this.sysUserName = user.name || '';
-				this.sysUserAvatar = user.avatar || '';
+				this.sysUserName = user.username || '';
+				this.sysUserAvatar = user.headImage|| '';
 			}
-
+			this.getMenuTree()
 		}
 	}
 
