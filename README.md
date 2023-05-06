@@ -7,12 +7,18 @@ This is a project template for [vue-cli](https://github.com/vuejs/vue-cli)
 ``` bash
 # install dependencies
 npm install
+cnpm install
+pnpm install
 
 # serve with hot reload at localhost:8081
 npm run dev
+cnpm run dev
+pnpm run dev
 
 # build for production with minification
 npm run build
+cnpm run build
+pnpm run build
 
 ```
 
