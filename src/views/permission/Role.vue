@@ -99,8 +99,8 @@
             </div>
         </el-dialog>
 
-        <!--		设置菜单弹框-->
-        <el-dialog title = "设置菜单" :visible.sync = "setMenuVisible" :close-on-click-modal = "false">
+        <!--		设置菜单弹框第一版-->
+<!--        <el-dialog title = "设置菜单" :visible.sync = "setMenuVisible" :close-on-click-modal = "false">
             <el-form :model = "rolePermission" label-width = "80px" ref = "setPermissionForm">
                 <el-checkbox :indeterminate = "isIndeterminate" v-model = "checkAllMenu"
                              @change = "handleCheckedAllMenusChange">
@@ -119,6 +119,38 @@
                 <el-button type = "primary" @click.native = "saveRoleMenu" :loading = "saveMenuLoading">提交
                 </el-button>
             </div>
+        </el-dialog>-->
+        <!--   设置菜单弹框第二版     -->
+        <el-dialog title = "设置权限" :visible.sync = "setMenuVisible" :close-on-click-modal = "false">
+            <el-form :model = "menuTress" label-width = "80px" ref = "setPermissionForm">
+                <el-checkbox :indeterminate = "isIndeterminate" v-model = "checkAll" @change = "handleCheckAllChange">
+                    全选
+                </el-checkbox>
+                <div class = "checkbox-table" v-for = "(p,indexkey) in permissionTree" :key = "p.sn">
+                    <template>
+                        <el-checkbox class = "check1" style = "font-weight: 600;margin-bottom: 15px "
+                                     v-model = 'rolePermission.permissionSns' :label = "p.sn"
+                                     @change = 'handleCheck(1,indexkey)'>
+                            {{ p.name }}
+                        </el-checkbox>
+                        <div style = "margin-bottom: 20px;">
+                            <div v-for = "c in p.children" class = "line-check" :key = "c.sn"
+                                 style = "display: inline-block; margin-left: 20px;margin-bottom: 20px;">
+                                <el-checkbox class = "check2" @change = 'handleCheck(2,indexkey)'
+                                             v-model = "rolePermission.permissionSns" :label = "c.sn">
+                                    {{ c.name }}
+                                </el-checkbox>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                {{ rolePermission.permissionSns }}
+            </el-form>
+            <div slot = "footer" class = "dialog-footer">
+                <el-button @click.native = "setPermissionVisible = false">取消</el-button>
+                <el-button type = "primary" @click.native = "saveRolePermission" :loading = "saveLoading">提交
+                </el-button>
+            </div>
         </el-dialog>
     </section>
 </template>
@@ -131,11 +163,12 @@
 export default {
     data() {
         return {
+            menuTress:[],
             roleMenuDTO: {
                 employeeId: '',
                 menuIds: ''
             },
-            saveMenuLoading:false,
+            saveMenuLoading: false,
             setMenuVisible: false,
             permissionTree: [],		// 获取权限树，包括一级权限和一级权限所对应的二级权限
             checkAll: [],
@@ -143,6 +176,7 @@ export default {
             checkedMenus: [],
             menus: [],
             menuIds: [],
+            allMenus:[],
             meunisIndeterminate: '',
             isIndeterminate: false,
             allPermissionSns: [],		// 全部权限的sn
@@ -191,15 +225,15 @@ export default {
     },
     methods: {
         setMenus: function (index, row) {
-            this.$http.get("/OperateMenu/getRoleMenu/"+row.id)
+            this.$http.get("/OperateMenu/getRoleMenu/" + row.id)
                 .then(result => {
                     result = result.data
                     this.checkedMenus = result.resultObj
                 })
-                .catch(()=>{
+                .catch(() => {
                     this.$message({
-                        type:"warning",
-                        message:"查询出错啦"
+                        type: "warning",
+                        message: "查询出错啦"
                     })
                 })
             this.setMenuVisible = true
@@ -218,9 +252,9 @@ export default {
 
                 })
         },
-        saveRoleMenu(){
+        saveRoleMenu() {
             this.roleMenuDTO.menuIds = this.checkedMenus
-            console.log("roleMenuDto",this.roleMenuDTO)
+            console.log("roleMenuDto", this.roleMenuDTO)
             this.$confirm('确认提交吗？', '提示', {}).then(() => {
                 this.saveMenuLoading = true;
                 //NProgress.start();
@@ -286,6 +320,14 @@ export default {
                     this.checkAll = checkedCount === this.allPermissionSns.length;
                     this.isIndeterminate = checkedCount > 0 && checkedCount < this.allPermissionSns.length;
                 })
+        },
+        getAllMenusTree(){
+          this.$http.get("/OperateMenu/treeAllMenus")
+              .then(reslut => {
+                  reslut = reslut.data
+                  this.allMenus = reslut.resultObj
+                  console.log("allMenus",this.allMenus)
+              })
         },
         getPermissionTree() {
             // 获取一级权限和二级权限
@@ -570,7 +612,8 @@ export default {
     mounted() {
         this.getAllRoles();
         this.getPermissionTree()
-        this.getAllMenus()
+        // this.getAllMenus()
+        this.getAllMenusTree()
     }
 }
 

@@ -25,6 +25,18 @@ import {requestLogin} from '../api/api';
 //import NProgress from 'nprogress'
 export default {
     data() {
+        var accountValidate = (rules,value,callback)=>{
+            if (this.value==="")
+                callback(new Error("请输入账号"))
+            else
+                callback()
+        }
+        var passwordValidate = (rules,value,callback)=>{
+            if (this.value==="")
+                callback(new Error("请输入密码"))
+            else
+                callback()
+        }
         return {
             logining: false,
             loginForm2: {
@@ -33,11 +45,13 @@ export default {
             },
             loginFormRules2: {
                 account: [
-                    {required: true, message: '请输入账号', trigger: 'blur'},
+                    {validator:accountValidate,trigger: 'blur'},
+                    // {required: true, message: '请输入账号', trigger: 'blur'},
                     //{ validator: validaePass }
                 ],
                 checkPass: [
-                    {required: true, message: '请输入密码', trigger: 'blur'},
+                    {validator:passwordValidate, trigger: 'blur'},
+                    // {required: true, message: '请输入密码', trigger: 'blur'},
                     //{ validator: validaePass2 }
                 ]
             },
