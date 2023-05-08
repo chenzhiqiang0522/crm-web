@@ -15,7 +15,7 @@
             </el-form>
         </el-col>
 
-        <!--列表-->
+        <!--员工设置列表-->
         <el-table :data = "employees" highlight-current-row v-loading = "listLoading" @selection-change = "selsChange"
                   style = "width: 100%;">
             <el-table-column type = "selection" width = "55">
@@ -37,8 +37,8 @@
             <el-table-column label = "操作" width = auto>
                 <template scope = "scope">
                     <el-button size = "small" @click = "handleEdit(scope.$index, scope.row)">编辑</el-button>
-                    <el-button type = "danger" size = "small" @click = "handleDel(scope.$index, scope.row)">删除
-                    </el-button>
+                    <el-button type = "danger" size = "small" @click = "handleDel(scope.$index, scope.row)">删除</el-button>
+                    <el-button type = "warning" size = "small" @click = "handleRole(scope.$index, scope.row)">设置权限</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -81,6 +81,21 @@
                 <el-button type = "primary" @click = "addSubmit" :loading = "addLoading">提交</el-button>
             </div>
         </el-dialog>
+
+        <!--设置权限界面-->
+        <el-dialog title = "角色设置" v-bind:visible.sync = "saveRoleVisible" :close-on-click-modal = "false">
+            <el-form :model = "roleForm" label-width = "80px" ref = "saveForm">
+                <el-form-item label = "员工角色" prop = "role">
+                    <el-radio-group v-model = "role" @change = "roleChange">
+                        <el-radio v-for = "item in roles" :label = "item.id">{{ item.name }}</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+            </el-form>
+            <div slot = "footer" class = "dialog-footer">
+                <el-button @click.native = "saveRoleVisible = false">取消</el-button>
+                <el-button type = "primary" @click = "addRoleSubmit" :loading = "addRoleLoading">提交</el-button>
+            </div>
+        </el-dialog>
     </section>
 </template>
 
@@ -89,9 +104,17 @@
 //import NProgress from 'nprogress'
 // import { getUserListPage, removeUser, batchRemoveUser, editUser, addUser } from '../../api/api';
 
+import role from "../permission/Role.vue";
+
 export default {
     data() {
         return {
+            roleForm:{
+                employeeId:'',
+                roleId:''
+            },
+            role:'',
+            saveRoleVisible:false,
             options: [],
             optionsValue: '',
             filters: {
@@ -103,15 +126,16 @@ export default {
             listLoading: false,
             sels: [],//列表选中列
             selsId: [],
-
+            roles:[],
             saveFormVisible: false,//新增界面是否显示
             addLoading: false,
+            addRoleLoading:false,
             saveFormRules: {
                 name: [
                     {required: true, message: '请输入姓名', trigger: 'blur'}
                 ]
             },
-            //新增界面数据
+            //新增、修改界面数据
             saveForm: {
                 id: '',
                 username: '',
@@ -209,6 +233,57 @@ export default {
 
             });
         },
+        getAllRoles:function (){
+            this.$http.get("/Roles")
+                .then(result => {
+                    result = result.data;
+                    console.log("AllRoles",result.resultObj)
+                    this.roles = result.resultObj;
+                })
+                .catch(result => {
+
+                })
+        },
+        //设置员工角色
+        handleRole:function(index, row){
+            this.$http.get("/Employees/getRoleByEmployeeId/"+row.id)
+                .then(result => {
+                    result = result.data
+                    this.role = result.resultObj
+                })
+            this.saveRoleVisible = true
+            console.log("row",row)
+            this.roleForm.employeeId = row.id
+        },
+        roleChange:function (){
+            console.log("roleId",this.role)
+            this.roleForm.roleId = this.role
+        },
+        addRoleSubmit:function (){
+
+            this.$confirm('确认提交吗？', '提示', {}).then(() => {
+                this.addRoleLoading = true
+                console.log("最后roleForm", this.roleForm)
+                this.$http.post("/Employees/addRoleToEmplyee",this.roleForm)
+                    .then(result => {
+                        result= result.data
+                        if (result.success){
+                            this.addRoleLoading = false
+                        }else{
+                            this.$message({
+                                type:"error",
+                                message:"角色赋权失败"
+                            })
+                        }
+                    })
+                    .catch(()=>{
+                        this.$message({
+                            type:"error",
+                            message:"网络出错"
+                        })
+                    })
+            })
+        },
         //显示编辑界面
         handleEdit: function (index, row) {
             this.getEmployees();
@@ -225,8 +300,8 @@ export default {
             this.getDepartmentTree()
             this.optionsValue = 0
         },
-        //编辑
-        editSubmit: function () {
+        // 保存表单数据
+        editSubmit: function (saveType) {
             this.$refs.editForm.validate((valid) => {
                 if (valid) {
                     this.$confirm('确认提交吗？', '提示', {}).then(() => {
@@ -251,6 +326,16 @@ export default {
                                     });
                                     this.saveFormVisible = false;
                                     this.getDepartments();
+                                    this.saveForm={
+                                        id: '',
+                                        username: '',
+                                        password: '',
+                                        email: '',
+                                        headImage: '',
+                                        age: '',
+                                        departmentId: ''
+
+                                    }
                                 } else {
                                     this.$message({
                                         message: result.msg,
@@ -384,6 +469,7 @@ export default {
     },
     mounted() {
         this.getEmployees()
+        this.getAllRoles()
 
     }
 }
