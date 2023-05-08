@@ -99,52 +99,34 @@
             </div>
         </el-dialog>
 
-        <!--		设置菜单弹框第一版-->
-<!--        <el-dialog title = "设置菜单" :visible.sync = "setMenuVisible" :close-on-click-modal = "false">
-            <el-form :model = "rolePermission" label-width = "80px" ref = "setPermissionForm">
-                <el-checkbox :indeterminate = "isIndeterminate" v-model = "checkAllMenu"
-                             @change = "handleCheckedAllMenusChange">
+
+        <el-dialog title = "设置菜单" :visible.sync = "setMenuVisible" :close-on-click-modal = "false">
+            <el-form :model = "menus" label-width = "80px" ref = "setMenuForm">
+                <el-checkbox :indeterminate = "isIndeterminateMenu" v-model = "checkedAllMenus"
+                             @change = "handleCheckAllMenuChange">
                     全选
                 </el-checkbox>
-                <div style = "margin: 15px 0;"></div>
-                <el-checkbox-group v-model = "checkedMenus" @change = "handleCheckedMenusChange">
-                    <el-checkbox v-for = "menu in menus" :label = "menu.id" :key = "menu.id">{{
-                        menu.name
-                        }}
-                    </el-checkbox>
-                </el-checkbox-group>
-            </el-form>
-            <div slot = "footer" class = "dialog-footer">
-                <el-button @click.native = "setMenuVisible = false">取消</el-button>
-                <el-button type = "primary" @click.native = "saveRoleMenu" :loading = "saveMenuLoading">提交
-                </el-button>
-            </div>
-        </el-dialog>-->
-        <!--   设置菜单弹框第二版     -->
-        <el-dialog title = "设置权限" :visible.sync = "setMenuVisible" :close-on-click-modal = "false">
-            <el-form :model = "menuTress" label-width = "80px" ref = "setPermissionForm">
-                <el-checkbox :indeterminate = "isIndeterminate" v-model = "checkAll" @change = "handleCheckAllChange">
-                    全选
-                </el-checkbox>
-                <div class = "checkbox-table" v-for = "(p,indexkey) in permissionTree" :key = "p.sn">
+                <div class = "checkbox-table" v-for = "(p,indexkey) in menus" :key = "p.id">
                     <template>
+                        <!--                        一级菜单-->
                         <el-checkbox class = "check1" style = "font-weight: 600;margin-bottom: 15px "
-                                     v-model = 'rolePermission.permissionSns' :label = "p.sn"
-                                     @change = 'handleCheck(1,indexkey)'>
+                                     v-model = 'roleMenu.menuIds' :label = "p.id"
+                                     @change = 'handleCheckMenu(1,indexkey)'>
                             {{ p.name }}
                         </el-checkbox>
                         <div style = "margin-bottom: 20px;">
-                            <div v-for = "c in p.children" class = "line-check" :key = "c.sn"
+                            <!--                            二级菜单-->
+                            <div v-for = "c in p.childMenu" class = "line-check" :key = "c.id"
                                  style = "display: inline-block; margin-left: 20px;margin-bottom: 20px;">
-                                <el-checkbox class = "check2" @change = 'handleCheck(2,indexkey)'
-                                             v-model = "rolePermission.permissionSns" :label = "c.sn">
+                                <el-checkbox class = "check2" @change = 'handleCheckMenu(2,indexkey)'
+                                             v-model = "roleMenu.menuIds" :label = "c.id">
                                     {{ c.name }}
                                 </el-checkbox>
                             </div>
                         </div>
                     </template>
                 </div>
-                {{ rolePermission.permissionSns }}
+                {{ roleMenu.menuIds }}
             </el-form>
             <div slot = "footer" class = "dialog-footer">
                 <el-button @click.native = "setPermissionVisible = false">取消</el-button>
@@ -163,7 +145,6 @@
 export default {
     data() {
         return {
-            menuTress:[],
             roleMenuDTO: {
                 employeeId: '',
                 menuIds: ''
@@ -171,16 +152,20 @@ export default {
             saveMenuLoading: false,
             setMenuVisible: false,
             permissionTree: [],		// 获取权限树，包括一级权限和一级权限所对应的二级权限
-            checkAll: [],
+            checkedAllMenus: [],
+            checkAll:false,
             checkAllMenu: false,
-            checkedMenus: [],
+            checkedMenus: [], // 当前角色已经拥有的菜单id
             menus: [],
-            menuIds: [],
-            allMenus:[],
-            meunisIndeterminate: '',
+            allMenuIds:[],
             isIndeterminate: false,
+            isIndeterminateMenu: false,
             allPermissionSns: [],		// 全部权限的sn
-            rolePermission: {
+            roleMenu: {             // 角色以及对应角色选中的菜单
+                roleId: null,
+                menuIds: []		// 已选中权限的sn
+            },
+            rolePermission: {   // 角色以及对应角色选中的权限标识
                 roleId: null,
                 permissionSns: []		// 已选中权限的sn
             },
@@ -240,45 +225,6 @@ export default {
             this.menuIds = this.menus.map(item => item.id)
             this.roleMenuDTO.employeeId = row.id
         },
-        getAllMenus: function () {
-            this.$http.get("/OperateMenu")
-                .then(result => {
-                    result = result.data
-                    this.menus = result.resultObj;
-                    console.log("MenuResult", result)
-
-                })
-                .catch(() => {
-
-                })
-        },
-        saveRoleMenu() {
-            this.roleMenuDTO.menuIds = this.checkedMenus
-            console.log("roleMenuDto", this.roleMenuDTO)
-            this.$confirm('确认提交吗？', '提示', {}).then(() => {
-                this.saveMenuLoading = true;
-                //NProgress.start();
-                let para = this.roleMenuDTO
-                this.$http.post("/OperateMenu/setRoleMenu", para)
-                    .then(result => {
-                        result = result.data
-                        this.saveLoading = false
-                        if (result.success) {
-                            this.$message({
-                                type: "success",
-                                message: "菜单设置成功"
-                            })
-                            this.setPermissionVisible = false
-                            this.saveMenuLoading = false
-                        } else {
-                            this.$message({
-                                type: "error",
-                                message: result.msg
-                            })
-                        }
-                    })
-            });
-        },
         saveRolePermission() {
             this.$confirm('确认提交吗？', '提示', {}).then(() => {
                 this.saveLoading = true;
@@ -321,13 +267,27 @@ export default {
                     this.isIndeterminate = checkedCount > 0 && checkedCount < this.allPermissionSns.length;
                 })
         },
-        getAllMenusTree(){
-          this.$http.get("/OperateMenu/treeAllMenus")
-              .then(reslut => {
-                  reslut = reslut.data
-                  this.allMenus = reslut.resultObj
-                  console.log("allMenus",this.allMenus)
-              })
+        getAllMenusTree() {
+            this.$http.get("/OperateMenu/treeAllMenus")
+                .then(result => {
+                    result = result.data
+                    console.log("treeAllMenus", result)
+                    if (result.success){
+                        this.menus = result.resultObj
+                        if (this.menus && this.menus.length>0){
+                            for (let i = 0; i <this.menus.length; i++) {
+                                this.allMenuIds.push(this.menus[i].id)
+                                let children = this.menus[i].childMenu
+                                if (children && children.length>0){
+                                    for (let j = 0; j < children.length; j++) {
+                                        this.allMenuIds.push(children[j].id)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log(this.allMenuIds)
+                })
         },
         getPermissionTree() {
             // 获取一级权限和二级权限
@@ -358,17 +318,54 @@ export default {
             this.rolePermission.permissionSns = val ? this.allPermissionSns : [];
             this.isIndeterminate = false;
         },
-        handleCheckedMenusChange(value) {
-            // console.log("value",value)
-            console.log("已选菜单id", this.checkedMenus)
-            let checkedLength = value.length
-            this.checkAllMenu = checkedLength === this.menus.length
-            this.isIndeterminate = checkedLength > 0 && checkedLength < this.menus.length;
+        handleCheckAllMenuChange(val) {     // 设置菜单的全选
+
+            this.roleMenu.menuIds = val ? this.allMenuIds: [];
+            this.isIndeterminateMenu = false;
         },
-        handleCheckedAllMenusChange(val) {
-            this.checkedMenus = val ? this.menuIds : [];
-            this.isIndeterminate = false;
-            console.log("已选菜单id", this.checkedMenus)
+        // 处理选择事件  type 1:一级权限2:二级权限   a：一级权限的索引位置
+        handleCheckMenu(type, a = 0) { // 多选框
+            // 在已选中的权限列表中，查看是否存在一级权限 >-1 存在  <0 不存在
+            let indexOf = this.roleMenu.menuIds.indexOf(this.menus[a].id);
+            if (type == 2) { // 二级菜单点击
+                let index = 0;  //
+                this.menus[a].children.map(item => {
+                    // 已选中的权限列表中，是否包含当前一级权限下的某个子权限
+                    if (this.roleMenu.menuIds.indexOf(item.id) > -1) {
+                        index += 1;
+                    }
+                })
+                if (index > 0) {  // 已选中的列表中，包含当前一级权限下的某个子权限
+                    if (indexOf < 0) {  // 已选中的权限列表中，没有当前一级权限，则添加到已选中的权限列表中
+                        this.roleMenu.menuIds.push(this.menus[a].id);
+                    }
+                } else {  // // 已选中的权限列表中，不包含当前一级权限下的某个子权限
+                    if (indexOf > -1) {// 已选中的权限列表中，有当前一级权限，则删除
+                        this.roleMenu.menuIds.splice(indexOf, 1);
+                    }
+                }
+            } else {  // 一级菜单点击
+                if (indexOf > -1) { // 已选中的权限中，包含当前一级权限，则将该一级权限下所有的子权限选中
+                    this.permissionTree[a].children.map(item => {
+                        if (this.rolePermission.permissionSns.findIndex((n) => n == item.sn) < 0) {
+                            this.rolePermission.permissionSns.push(item.sn)
+                        }
+                    })
+                } else {
+                    // 已选中的权限中，不包含当前一级权限，则将该一级权限下所有的子权限移除
+                    this.menus[a].childMenu.map(item => {
+                        if (this.roleMenu.menuIds.findIndex((n) => n == item.id) > -1) {
+                            this.roleMenu.menuIds.splice(this.roleMenu.menuIds.findIndex((n) => n == item.id), 1);
+                        }
+                    })
+                }
+            }
+            // 获取已选中的长度
+            let checkedCount = this.roleMenu.menuIds.length;
+            // 如果已选中的长度==所有权限的长度，则checkAll=true，也就是全选框被选中
+            this.checkAllMenu = checkedCount === this.allMenuIds.length;
+            // 如果已选中的长度>0并且已选中的长度<所有权限的长度，则全选框是一个横杠
+            this.isIndeterminate = checkedCount > 0 && checkedCount < this.allMenuIds.length;
         },
         // 处理选择事件  type 1:一级权限2:二级权限   a：一级权限的索引位置
         handleCheck(type, a = 0) { // 多选框
@@ -612,7 +609,6 @@ export default {
     mounted() {
         this.getAllRoles();
         this.getPermissionTree()
-        // this.getAllMenus()
         this.getAllMenusTree()
     }
 }
