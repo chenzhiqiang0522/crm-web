@@ -32,7 +32,7 @@
             </el-table-column>
             <el-table-column prop = "age" label = "年龄" width = auto sortable>
             </el-table-column>
-            <el-table-column prop = "departmentId" label = "所属部门" width = auto sortable>
+            <el-table-column prop = "parentDepartmentName" label = "所属部门" width = auto sortable>
             </el-table-column>
             <el-table-column label = "操作" width = auto>
                 <template scope = "scope">
@@ -177,7 +177,7 @@ export default {
                     console.log("result(EmployeePageList)",result)
                     if (result.data.success){
                         result = result.data
-                        console.log(result)
+                        console.log("EmployeePageList",result)
                         this.total = result.resultObj.total
                         this.employees = result.resultObj.rows
                     }else{
